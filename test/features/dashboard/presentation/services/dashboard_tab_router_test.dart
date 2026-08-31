@@ -9,10 +9,6 @@ void main() {
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.homeTab), PetContext.home);
     });
 
-    test('Academy tab maps to PetContext.academy', () {
-      expect(DashboardTabRouter.petContextFor(DashboardTabRouter.academyTab), PetContext.academy);
-    });
-
     test('Wallet and Passive Income tabs share PetContext.portfolio', () {
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.walletTab), PetContext.portfolio);
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.passiveIncomeTab), PetContext.portfolio);
@@ -21,15 +17,22 @@ void main() {
     test('Mentor tab (and any other index) maps to PetContext.mentor', () {
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.mentorTab), PetContext.mentor);
     });
+
+    test('never maps any tab index to PetContext.academy — Wallet has no Academy tab', () {
+      for (final tab in [
+        DashboardTabRouter.homeTab,
+        DashboardTabRouter.walletTab,
+        DashboardTabRouter.passiveIncomeTab,
+        DashboardTabRouter.mentorTab,
+      ]) {
+        expect(DashboardTabRouter.petContextFor(tab), isNot(PetContext.academy));
+      }
+    });
   });
 
   group('DashboardTabRouter.backgroundIntensityFor', () {
     test('Home is immersive', () {
       expect(DashboardTabRouter.backgroundIntensityFor(DashboardTabRouter.homeTab), BackgroundIntensity.immersive);
-    });
-
-    test('Academy is subtle', () {
-      expect(DashboardTabRouter.backgroundIntensityFor(DashboardTabRouter.academyTab), BackgroundIntensity.subtle);
     });
 
     test('Wallet and Passive Income are balanced', () {
@@ -47,7 +50,6 @@ void main() {
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.walletTab), isTrue);
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.passiveIncomeTab), isTrue);
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.homeTab), isFalse);
-      expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.academyTab), isFalse);
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.mentorTab), isFalse);
     });
   });

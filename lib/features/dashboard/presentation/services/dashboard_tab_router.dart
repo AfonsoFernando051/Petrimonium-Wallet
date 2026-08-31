@@ -1,29 +1,26 @@
 import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/features/pet/presentation/companion/pet_context.dart';
 
-/// Pure tab-index → behavior mappings for [DashboardScreen]'s 5 bottom-nav
-/// tabs (Home/Academy/Wallet/Passive Income/Mentor). The `dashboard` feature
-/// has no domain layer of its own, so this small but real business logic
-/// (which background mood and which persistent-companion voice each tab
-/// gets) previously lived inline in the screen; pulled out here so it's
+/// Pure tab-index → behavior mappings for [DashboardScreen]'s 4 bottom-nav
+/// tabs (Visão Geral/Carteira/Proventos/Mentor). Wallet has no Academy tab —
+/// see docs/ECOSYSTEM.md's Stage 5 note. The `dashboard` feature has no
+/// domain layer of its own, so this small but real business logic (which
+/// background mood and which persistent-companion voice each tab gets)
+/// previously lived inline in the screen; pulled out here so it's
 /// independently testable and the screen only orchestrates widgets.
 class DashboardTabRouter {
   DashboardTabRouter._();
 
   static const int homeTab = 0;
-  static const int academyTab = 1;
-  static const int walletTab = 2;
-  static const int passiveIncomeTab = 3;
-  static const int mentorTab = 4;
+  static const int walletTab = 1;
+  static const int passiveIncomeTab = 2;
+  static const int mentorTab = 3;
 
   // Content-hierarchy comes from swapping intensity per selected tab: full
-  // cosmic expression on Home, progressively quieter as the screen gets more
-  // cognitively demanding, down to Academy. Lesson/quiz screens go one step
-  // further with their own `focus`-level CosmicBackground pushed as a
-  // separate route (see LessonScreen).
+  // cosmic expression on Visão Geral, progressively quieter for the more
+  // data-dense tabs.
   static const List<BackgroundIntensity> _tabIntensities = [
-    BackgroundIntensity.immersive, // Home
-    BackgroundIntensity.subtle, // Academia
+    BackgroundIntensity.immersive, // Visão Geral
     BackgroundIntensity.balanced, // Carteira / Portfolio
     BackgroundIntensity.balanced, // Proventos / Passive income
     BackgroundIntensity.mentor, // Mentor
@@ -32,11 +29,12 @@ class DashboardTabRouter {
   static BackgroundIntensity backgroundIntensityFor(int tabIndex) => _tabIntensities[tabIndex];
 
   /// (`docs/PROJECT_CONTEXT.md`'s Pet Companion section, `PetContext`'s doc
-  /// comment on why this mirrors the 5 real tabs + Profile rather than a
-  /// generic missions/goals set that doesn't exist in this app.)
+  /// comment.) `PetContext.academy` is never returned here — Wallet has no
+  /// Academy tab to map a companion voice to; it's still a valid
+  /// destination for the pet's "learn more" action (see
+  /// `DashboardScreen._handleCompanionDestination`), just not a tab.
   static PetContext petContextFor(int tabIndex) => switch (tabIndex) {
         homeTab => PetContext.home,
-        academyTab => PetContext.academy,
         walletTab || passiveIncomeTab =>
           PetContext.portfolio, // Carteira / Proventos share the same companion voice
         _ => PetContext.mentor,

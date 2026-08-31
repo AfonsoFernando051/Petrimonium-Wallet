@@ -13,7 +13,6 @@ import 'package:petrimonium/features/portfolio/domain/services/insight_generator
 import 'package:petrimonium/features/portfolio/presentation/widgets/holdings_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/achievements_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/insights_section.dart';
-import 'package:petrimonium/features/portfolio/presentation/widgets/missions_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/portfolio_activation_view.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/quick_actions_fab.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/rpg_integration_card.dart';
@@ -142,10 +141,9 @@ class PortfolioScreen extends StatelessWidget {
                       controller.gamificationSummary?.currentStreak ?? 0,
                 ),
                 const SizedBox(height: 16),
-                if (controller.missions.isNotEmpty) ...[
-                  MissionsSection(missions: controller.missions),
-                  const SizedBox(height: 16),
-                ],
+                // Missions are an educational-practice concept (Academy owns
+                // them) — Wallet shows only behavior-based achievements/
+                // milestones, never a missions list.
                 AchievementsSection(achievements: controller.achievements),
               ],
             ),

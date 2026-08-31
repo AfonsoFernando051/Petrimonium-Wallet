@@ -165,21 +165,7 @@ void main() {
       expect(find.byType(QuickActionsFab), findsOneWidget);
     });
 
-    testWidgets('shows the MissionsSection only when there are missions', (
-      WidgetTester tester,
-    ) async {
-      repository.holdingsToReturn = Holding.fromLots([lot()]);
-      await controller
-          .loadAll(); // FakeMissionsRepository defaults to MissionEvaluationResult.empty
-
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
-
-      expect(find.byType(MissionsSection), findsNothing);
-    });
-
-    testWidgets('shows the MissionsSection when the backend reports missions', (
+    testWidgets('never shows a MissionsSection — Wallet has no missions/gamification narrative', (
       WidgetTester tester,
     ) async {
       repository.holdingsToReturn = Holding.fromLots([lot()]);
@@ -204,7 +190,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.byType(MissionsSection), findsOneWidget);
+      expect(find.byType(MissionsSection), findsNothing);
     });
 
     testWidgets(

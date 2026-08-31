@@ -11,7 +11,7 @@ import 'package:petrimonium/core/theme/app_text_styles.dart';
 import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/core/utils/pet_assets.dart';
 import 'package:petrimonium/core/utils/translator.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/academy_intro_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/financial_goal_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/widgets/onboarding_scaffold.dart';
 import 'package:petrimonium/features/onboarding/presentation/widgets/pet_hero_capsule.dart';
 import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
@@ -22,8 +22,9 @@ import 'package:petrimonium/core/widgets/glass_card.dart';
 
 /// Onboarding's "Configure Your Pet" step — the pet introduces itself, and
 /// the player picks its species and name together in one screen right after
-/// the emotional Welcome opener. The financial goal (`FinancialGoalScreen`)
-/// and the Academy/Gamification narrative screens come after this one.
+/// the emotional Welcome opener. Wallet has no Academy/Gamification
+/// narrative (that's Academy's onboarding, not this app's) — the financial
+/// goal (`FinancialGoalScreen`) comes directly after this one.
 class PetConfigurationScreen extends StatefulWidget {
   const PetConfigurationScreen({super.key});
 
@@ -72,9 +73,11 @@ class _PetConfigurationScreenState extends State<PetConfigurationScreen> {
       await DI.petRepository.configurePet(_selectedSpecie);
       await DI.mascotRepository.saveName(name);
       if (mounted) {
+        // Wallet has no Academy/Gamification narrative — skips straight to
+        // the financial goal step, unlike Academy's onboarding wizard.
         Navigator.of(
           context,
-        ).push(MaterialPageRoute(builder: (_) => const AcademyIntroScreen()));
+        ).push(MaterialPageRoute(builder: (_) => const FinancialGoalScreen()));
       }
     } catch (e) {
       if (mounted) {

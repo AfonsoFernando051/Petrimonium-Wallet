@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_theme.dart';
 import 'package:petrimonium/core/utils/translator.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/academy_intro_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/financial_goal_screen.dart';
 import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart';
@@ -94,7 +94,7 @@ void main() {
       expect(textField.controller?.text, 'Bolt');
     });
 
-    testWidgets('continuing with a valid name configures the pet and navigates to AcademyIntroScreen', (tester) async {
+    testWidgets('continuing with a valid name configures the pet and navigates to FinancialGoalScreen (Wallet has no Academy narrative)', (tester) async {
       when(() => mockPetRepository.configurePet(any())).thenAnswer((_) async {});
       when(() => mockMascotRepository.saveName(any())).thenAnswer((_) async {});
 
@@ -111,7 +111,7 @@ void main() {
 
       verify(() => mockPetRepository.configurePet(PetSpecieEnum.DOG)).called(1);
       verify(() => mockMascotRepository.saveName('Loki')).called(1);
-      expect(find.byType(AcademyIntroScreen), findsOneWidget);
+      expect(find.byType(FinancialGoalScreen), findsOneWidget);
     });
 
     testWidgets('selecting a different species passes it to configurePet on continue', (tester) async {

@@ -14,10 +14,10 @@ import '../../../../core/widgets/cosmic_background.dart';
 import '../../../../core/di/dependency_injection.dart';
 import '../../../../core/events/app_event.dart';
 import '../../../../core/events/app_event_bus.dart';
-import '../../../academy/presentation/screens/academy_home_screen.dart';
+import '../../../../core/utils/game_snack.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../game/domain/services/level_calculator.dart';
-import '../../../home/presentation/screens/home_screen.dart';
+import '../../../home/presentation/screens/overview_screen.dart';
 import '../../../pet/presentation/mascot/controllers/mascot_controller.dart';
 import '../../../portfolio/domain/entities/achievement.dart';
 import '../../../portfolio/presentation/controllers/portfolio_controller.dart';
@@ -181,7 +181,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // `PortfolioController.hasDividendPayingHoldings`.
   List<int> get _visibleTabIndices => [
     DashboardTabRouter.homeTab,
-    DashboardTabRouter.academyTab,
     DashboardTabRouter.walletTab,
     if (_portfolioController.hasDividendPayingHoldings)
       DashboardTabRouter.passiveIncomeTab,
@@ -245,16 +244,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleCompanionDestination(PetContext destination) {
     switch (destination) {
       case PetContext.academy:
-        _onTabSelected(1);
+        // Wallet has no in-app Academy tab — Academy is a separate app.
+        _showAcademyComingSoon();
       case PetContext.portfolio:
-        _onTabSelected(2);
+        _onTabSelected(DashboardTabRouter.walletTab);
       case PetContext.mentor:
-        _onTabSelected(4);
+        _onTabSelected(DashboardTabRouter.mentorTab);
       case PetContext.home:
-        _onTabSelected(0);
+        _onTabSelected(DashboardTabRouter.homeTab);
       case PetContext.profile:
         _openProfile();
     }
+  }
+
+  // Wallet has no in-app Academy tab or shared code with the Academy app —
+  // see `AcademyBridgeCta`'s class doc for why this is a graceful
+  // placeholder rather than a broken/no-op tap target, until real
+  // OS-level deep-linking exists.
+  void _showAcademyComingSoon() {
+    GameSnack.show(
+      context,
+      Translator.translate(AppStrings.academyBridgeComingSoon),
+    );
   }
 
   Future<void> _openProfile() async {
@@ -327,7 +338,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 index: _selectedIndex,
                 children: [
                   _buildHomeContent(),
-                  _buildAcademyContent(),
                   _buildWalletContent(),
                   _buildPassiveIncomeContent(),
                   _buildMentorContent(),
@@ -483,23 +493,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ── Home: learning-first orchestration layer (docs/PRODUCT_VISION.md §8) ─
-  // Detailed financial metrics, missions and achievements live on Carteira
-  // (Portfolio) now — Home orients the user in their learning journey first.
-  // Both tabs share `_portfolioController`/`_mascotController` so they
-  // always agree.
+  // ── Visão Geral: real-portfolio dashboard (docs/ECOSYSTEM.md Stage 5) ────
+  // Replaces the old learning-first `HomeScreen`. Both this and Carteira
+  // share `_portfolioController`/`_mascotController` so they always agree.
   Widget _buildHomeContent() {
-    return HomeScreen(
-      portfolioController: _portfolioController,
-      mascotController: _mascotController,
-      onOpenAcademyTab: () => setState(() => _selectedIndex = 1),
-      onOpenPortfolioTab: () => setState(() => _selectedIndex = 2),
+    return OverviewScreen(
+      controller: _portfolioController,
       showPortfolioReminder: _showPortfolioReminder,
       onDismissPortfolioReminder: () =>
           setState(() => _showPortfolioReminder = false),
       investorProfileUnanswered: _investorProfileUnanswered,
-      companionController: _companionController,
-      heroAnchor: _heroAnchor,
+      onOpenPortfolioTab: () =>
+          setState(() => _selectedIndex = DashboardTabRouter.walletTab),
     );
   }
 
@@ -508,21 +513,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return PortfolioScreen(
       controller: _portfolioController,
       mascotController: _mascotController,
-      onOpenAcademyTab: () => setState(() => _selectedIndex = 1),
+      onOpenAcademyTab: _showAcademyComingSoon,
     );
   }
 
   // ── Proventos / Passive Income ────────────────────────────────────────────
   Widget _buildPassiveIncomeContent() {
     return PassiveIncomeScreen(controller: _portfolioController);
-  }
-
-  // ── Academia: module/lesson progression (see docs/ACADEMY_ENGINE.md) ────
-  Widget _buildAcademyContent() {
-    return AcademyHomeScreen(
-      mascotController: _mascotController,
-      companionController: _companionController,
-    );
   }
 
   // ── Mentor: AI-powered chat with the pet acting as investment mentor ────
@@ -546,11 +543,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Icon(Icons.rocket_launch),
         ),
         label: Translator.translate(AppStrings.navHome),
-      ),
-      DashboardTabRouter.academyTab => BottomNavigationBarItem(
-        icon: const Icon(Icons.school_outlined),
-        activeIcon: const Icon(Icons.school),
-        label: Translator.translate(AppStrings.navAcademy),
       ),
       DashboardTabRouter.walletTab => BottomNavigationBarItem(
         icon: const Icon(Icons.diamond_outlined),

@@ -221,16 +221,6 @@ void main() {
       expect(navIcon(Icons.rocket_launch), findsOneWidget); // active Home nav icon
     });
 
-    testWidgets('switching to the Academy tab shows Academy nav as active', (tester) async {
-      await tester.pumpWidget(buildTestable());
-      await pumpUntilLoaded(tester);
-
-      await tester.tap(navIcon(Icons.school_outlined));
-      await pumpUntilLoaded(tester);
-
-      expect(navIcon(Icons.school), findsOneWidget); // active Academy nav icon
-    });
-
     testWidgets('switching to the Wallet tab shows Wallet nav as active', (tester) async {
       await tester.pumpWidget(buildTestable());
       await pumpUntilLoaded(tester);

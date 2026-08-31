@@ -499,6 +499,14 @@ class AppStrings {
   static const String navAcademy = "navAcademy";
   static const String navMentor = "navMentor";
 
+  // Wallet's "Visão Geral" overview screen (real-portfolio dashboard,
+  // replaces the old learning-first Home) and its public Academy bridge —
+  // see docs/ECOSYSTEM.md's Stage 5 note. Never an in-app tab switch: Wallet
+  // and Academy are separate apps.
+  static const String overviewNoInsightsYet = "overviewNoInsightsYet";
+  static const String academyBridgeCtaLabel = "academyBridgeCtaLabel";
+  static const String academyBridgeComingSoon = "academyBridgeComingSoon";
+
   // Home redesign — learning-first hierarchy (docs/PRODUCT_VISION.md §8)
   static const String homeContinueLearningEyebrow =
       "homeContinueLearningEyebrow";

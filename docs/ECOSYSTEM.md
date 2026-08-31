@@ -169,3 +169,60 @@ from the original audit above are now resolved:
 Everything else above (nav shell, shared packages, `WalletPetBehavior`,
 deep-link scheme, task 2/3/4/5 findings) is unchanged and still pending —
 tracked under the plan's later stages.
+
+## Update, 2026-08-31 (Stage 5 — Wallet shell, first pass)
+
+Stage 5 of the plan (own navigation shell, strip Academy/educational
+gamification surfacing) executed as a **first pass**, scoped to the
+highest-risk, most user-facing pieces rather than a full sweep of every
+Academy reference in the codebase (that full sweep — deleting
+`lib/features/academy/`, the old `home_screen.dart`, `academy_intro_screen.dart`,
+`gamification_intro_screen.dart`, mission catalog/data files, and
+`next_action_card`/`knowledge_map_strip`/`learning_hero_card`/
+`portfolio_bridge_card` — is deliberately deferred to Stage 7, matching the
+"don't move hundreds of files in one pass" precedent from earlier stages).
+
+What changed:
+
+- **Onboarding wizard no longer routes new signups through Academy/
+  gamification intro screens.** This was a live product/compliance issue,
+  not dead code: every new Wallet user (a real-money app) was being shown
+  `AcademyIntroScreen`/`GamificationIntroScreen`. `pet_configuration_screen.dart`
+  now navigates straight to `FinancialGoalScreen`. Confirmed via grep that no
+  other entry point (`main.dart`, route resolver) reaches the skipped
+  screens, so they're safely unreachable without needing deletion yet.
+- **Dashboard shell has no Academy tab.** `DashboardTabRouter` rewritten:
+  `academyTab` removed, remaining tabs renumbered
+  (`homeTab=0, walletTab=1, passiveIncomeTab=2, mentorTab=3`),
+  `petContextFor` no longer maps any tab to `PetContext.academy`.
+  `DashboardScreen`'s `IndexedStack` dropped `_buildAcademyContent()`
+  entirely. The persistent pet companion's "go to Academy" destination
+  (`PetContext.academy`, still reachable from non-tab UI) now shows a
+  "coming soon" snackbar instead of switching tabs, since Academy is a
+  separate app now — no in-app fallback exists.
+- **New Home tab (`OverviewScreen`)** replaces the old Academy-heavy
+  `HomeScreen`: portfolio hero summary, wealth evolution, insights, and an
+  `AcademyBridgeCta` (mirrors Academy's own `WalletBridgeCta`) that always
+  renders in a disabled/"coming soon" state, since cross-app deep-linking
+  isn't implemented in either direction yet.
+- **`MissionsSection` removed from `PortfolioScreen`.** Missions are an
+  educational-gamification concept (daily/weekly lesson-completion
+  quests) that has no place in the real-money Carteira view.
+  `AchievementsSection` (behavior-based badges, see Task 6 table above) is
+  kept.
+
+Tests: fixed 3 tests that broke as direct, expected consequences of the
+above (onboarding nav target assertion, the now-removed Academy-tab nav
+test, the now-removed MissionsSection-visible test) — no other tests
+touched. Full suite: 1584/1584 green. `flutter analyze`: no issues.
+`flutter build linux --debug`: succeeds.
+
+Not done in this pass (tracked as Stage 7 debt): full deletion of
+`lib/features/academy/`, the old `home_screen.dart`, `academy_intro_screen.dart`
+and `gamification_intro_screen.dart` files themselves (now unreachable but
+still present), mission catalog/data-layer files, and the outcome-based
+badges flagged as debt back in the original audit (`positive_return`,
+`portfolio_10k`, `portfolio_50k`, `dividend_hunter`) — still un-migrated per
+the earlier "keep as-is for now" decision.
+
+No commits yet for this stage's changes — pending the end-of-stage report.
