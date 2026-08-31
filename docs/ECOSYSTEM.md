@@ -1,0 +1,137 @@
+# Ecosystem role — Petrimonium Wallet
+
+Status as of 2026-08-31: **audited only — no code changed yet.** A prior
+Claude Code session ran the repo's onboarding prompt, produced the audit and
+findings below, and ended without the user responding — nothing here has
+been confirmed or implemented. Treat everything below as a proposal awaiting
+your decision, not a plan already in motion.
+
+## The three repos
+
+| Repo | Job | Money |
+|---|---|---|
+| **`petrimonium-wallet`** (this repo) | Real investment management — trust-forward, behavior-based gamification only | Real |
+| [`petrimonium-academy`](../../Petrimonium-Academy) | Financial education, simulated money, full gamification | Simulated only |
+| [`petrimonium-backend`](../../Petrimonium-Backend) | Shared Spring Boot / PostgreSQL backend for both apps | N/A (data layer) |
+
+## Where this actually came from
+
+This repo is currently **not** the real-money-only Wallet app its prompt
+describes — it's a full clone of [`Invest-Game-V2`](../../Invest-Game-V2), the
+same mature combined app (education + simulated portfolio + real portfolio +
+gamification + AI mentor + Pet, all one product) that `petrimonium-academy`
+was also forked from. Its own code comments cite
+`Invest-Game-V2/docs/PRODUCT_VISION.md`/`DECISIONS.md` directly. There is no
+`petrimonium-academy`-shaped split here yet, and the backend is referred to
+in comments as a single `PetApp-Backend`, not the scoped BFF architecture the
+backend prompt targets.
+
+**Practically:** `petrimonium-academy` has since started splitting itself out
+of this same shared starting point (nav shell mapping, an isolated Pet
+behavior contract, a Wallet-bridge CTA — see that repo's own
+`docs/ECOSYSTEM.md`). This repo hasn't done any of that yet — it's still at
+the "here's what would need to change" stage.
+
+## Audit findings (§0 of the original prompt)
+
+- **Structure**: feature-first Flutter app — `lib/features/` has `academy`,
+  `asset_details`, `auth`, `dashboard`, `game`, `home`, `investment`,
+  `mentor`, `onboarding`, `pet`, `portfolio`, `profile`, `settings` — one
+  static DI locator, one 5-tab dashboard (Home, Carteira/Wallet,
+  Proventos, Academia, Mentor).
+- **Academy content is not leftover — it's the product.** The entire
+  `lib/features/academy/` tree (schools, modules, lessons, quizzes,
+  Financial Lab simulators) is core, intentional, per
+  `PRODUCT_VISION.md §6/§10` ("the learning ↔ portfolio connection is the
+  deeper, harder-to-copy differentiator"). Stripping it out as "Academy
+  leakage" would delete the actual product, not clean up debris — this needs
+  a product decision (does Wallet actually lose Academy, or does it stay
+  until a real split date?), not an engineering cleanup pass.
+- **Gamification — mostly already compliant, three flags:** XP/Pet evolution
+  is already hard-gated to learning/practice only (never wealth or trading —
+  every outcome-based achievement sets `xpReward: 0` per `DECISION-014`/
+  `DECISION-027`). No leaderboard exists anywhere in the codebase. But three
+  **0-XP badges are still outcome-based under this repo's own hard rule**
+  (§1.3: "never allowed, under any framing... anything that could read as
+  comparing investment performance"):
+  - `positive_return` ("Primeiro Lucro") — profit-threshold badge
+  - `portfolio_10k` / `portfolio_50k` — wealth-threshold badges
+  - `dividend_hunter` — passive-income-threshold badge
+
+  All four live in `lib/features/portfolio/domain/services/achievement_catalog.dart`.
+  **Open question, never answered:** zero these four out of the catalog, or
+  keep them as "flavor" per the existing `DECISION-014` reasoning? This is
+  the one concrete, low-risk, non-destructive change available today — it
+  just needs your call.
+- **Streak naming ambiguity**: `GamificationSummary.currentStreak`/
+  `longestStreak` is a general engagement streak (not trade frequency), but
+  the field name alone doesn't make that legible to a future contributor,
+  and `rpg_integration_card.dart` surfaces it right next to net worth. Worth
+  a rename/doc comment, not urgent.
+- **State management**: no dedicated library (no Provider/Riverpod/Bloc/GetX)
+  — vanilla `ChangeNotifier` controllers + a static-class DI locator, same
+  pattern as `petrimonium-academy`.
+- **Compliance/KYC**: none exists. No KYC flow, no risk-disclosure copy. Auth
+  is a plain access/refresh JWT bearer pair with no `app_context` or
+  `provisioning` claim.
+
+## Findings on the remaining tasks (2–6 of the original prompt)
+
+- **Nav shell (task 2)** — proposed mapping if/when Wallet becomes its own
+  surface: Overview ← `portfolio`; Invest/Move ← `investment`; Insights ←
+  `mentor` + `portfolio/insights` + `asset_details` (drop education content,
+  keep the data); Profile/Pet ← `pet` + `profile` + `settings`. `academy`
+  has no destination tab in this mapping — it would need to move to a
+  separate module/repo entirely, not just a folder rename.
+- **Shared packages (task 3)** — zero shared-package infrastructure exists
+  (no Melos/workspace, no git-ref packages). Recommendation: defer real
+  package extraction until Academy is actually being pulled out of this
+  shared starting point; treat `lib/core/*` as the de facto contract to
+  duplicate/match until then. Not decided — flagged as your call in the
+  original session, still open.
+- **`WalletPetBehavior` (task 4)** — **already satisfied structurally, no
+  code needed yet.** The single `pet_message_catalog.dart` every reaction
+  routes through already takes only pre-aggregated signals (holding counts,
+  concentration %, titles) — never raw price/quote data —
+  `MascotController.evaluateEvolution` only ever takes `userXp`. The "never
+  wire price data into Pet reactions" constraint is already true by
+  construction (`DECISION-014`/`DECISION-027`). Writing a
+  `WalletPetBehavior implements PetBehavior` today, with nothing else
+  implementing the interface, would be a disconnected, unused type — the
+  real split only makes sense once Academy extraction is actually underway.
+  Compare `petrimonium-academy`'s `PetBehavior` contract
+  (`docs/ECOSYSTEM.md` there) once that happens — the two should match.
+- **"Learn why" deep link (task 5)** — **already built, more deeply, in-app.**
+  `lib/features/asset_details/domain/services/portfolio_learning_bridge.dart`
+  already connects completed Academy lessons to live asset indicators
+  (`AppliedConcept`), surfaced on the asset-details screen — this is
+  `ACADEMY_ENGINE.md §7`'s "Educational Portfolio Intelligence" feature.
+  Since Academy and Wallet are the same app today, there's no
+  app-not-installed case yet, so building a `petrimonium://` URI resolver
+  now would just be unused App Store fallback logic. Proposed scheme name
+  for later: `petrimonium://academy/lesson/{id}` — matches the inverse
+  direction of `petrimonium-academy`'s own proposed
+  `petrimonium://wallet/portfolio?highlight=<concept>` scheme (see that
+  repo's `docs/CROSS_REPO_CONTRACTS.md`). Neither scheme is implemented as a
+  real OS-level link yet in either repo.
+
+### Task 6 — gamification design-review table
+
+| Element | Type | Verdict |
+|---|---|---|
+| XP from lessons/quizzes/labs | Behavior-based | ✅ Keep |
+| Pet evolution (XP-gated only) | Behavior-based | ✅ Keep |
+| Engagement streak (`currentStreak`, daily activity) | Behavior-based | ✅ Keep — rename/re-document so "not trade frequency" is obvious to future contributors |
+| `diversification_master`, `etf_collector` badges (0 XP) | Behavior-based | ✅ Keep |
+| `first_investment`, `hundred_days`, `long_term_investor` badges (0 XP) | Behavior-based (consistency/milestone) | ✅ Keep |
+| `positive_return` ("Primeiro Lucro") badge | **Outcome-based** (profit) | 🚩 Flag — unresolved, see above |
+| `portfolio_10k` / `portfolio_50k` badges | **Outcome-based** (wealth threshold) | 🚩 Flag — unresolved |
+| `dividend_hunter` badge | **Outcome-based** (passive income threshold) | 🚩 Flag — unresolved |
+| Leaderboards | N/A | ✅ None exist in the codebase |
+| Streaks tied to trades | N/A | ✅ None exist — streak is engagement-only |
+
+## What hasn't been done
+
+Everything except the audit. No nav shell change, no shared packages, no
+`WalletPetBehavior`, no deep-link scheme implementation, no decision on the
+three flagged badges.
