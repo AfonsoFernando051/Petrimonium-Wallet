@@ -35,6 +35,12 @@ class ApiConstants {
     }
   }
 
+  // Identifies this app to the backend at login so the issued JWT carries the
+  // matching `app_context` claim — required as of backend commit 7b51782,
+  // which gates /api/investments/** behind APP_CONTEXT_WALLET. Fixed per-app
+  // value, not a build flag: this binary is only ever the Wallet client.
+  static const String appContext = 'wallet';
+
   static const String loginEndpoint = '/auth/login';
   static const String googleLoginEndpoint = '/auth/google';
   static const String registerEndpoint = '/auth/register';

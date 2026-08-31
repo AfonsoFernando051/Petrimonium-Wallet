@@ -1,10 +1,15 @@
 # Ecosystem role — Petrimonium Wallet
 
-Status as of 2026-08-31: **audited only — no code changed yet.** A prior
-Claude Code session ran the repo's onboarding prompt, produced the audit and
-findings below, and ended without the user responding — nothing here has
-been confirmed or implemented. Treat everything below as a proposal awaiting
-your decision, not a plan already in motion.
+Status as of 2026-08-31: the audit below is historical context from a prior
+session and is largely still accurate, but two things have since changed —
+see "Update, 2026-08-31 (split execution begins)" at the bottom for what's
+actually been decided and implemented. The rest of this file is kept as-is
+for the reasoning trail.
+
+Original status note (superseded, kept for history): "audited only — no code
+changed yet." A prior Claude Code session ran the repo's onboarding prompt,
+produced the audit and findings below, and ended without the user responding
+— nothing here had been confirmed or implemented at that point.
 
 ## The three repos
 
@@ -132,6 +137,35 @@ the "here's what would need to change" stage.
 
 ## What hasn't been done
 
-Everything except the audit. No nav shell change, no shared packages, no
-`WalletPetBehavior`, no deep-link scheme implementation, no decision on the
-three flagged badges.
+Everything except the audit and the two items below. No nav shell change, no
+shared packages, no `WalletPetBehavior`, no deep-link scheme implementation.
+
+## Update, 2026-08-31 (split execution begins)
+
+The user confirmed the full functional split described in the three repos'
+prompts is happening now, following a 7-stage incremental plan (baseline
+contracts → backend `simulated_portfolio` → Academy migration → backend
+`real_portfolio` → Wallet shell → pet/XP/mentor → cleanup). Two decisions
+from the original audit above are now resolved:
+
+- **The three/four outcome-based badges** (`positive_return`,
+  `portfolio_10k`, `portfolio_50k`, `dividend_hunter` in
+  `achievement_catalog.dart`) — **kept as-is for now**, explicitly recorded
+  as known technical debt against this repo's own rule that reactions must
+  never celebrate wealth. Not blocking the rest of the split. Revisit when
+  the Wallet shell (stage 5 of the plan) is actually rebuilt.
+- **`app_context` JWT wiring** — implemented. This repo's login/Google-login
+  calls (`lib/features/auth/data/datasources/auth_remote_datasource.dart`)
+  now send `appContext: 'wallet'` (`ApiConstants.appContext`), matching the
+  backend's `AppContextEnum` and the `hasAuthority("APP_CONTEXT_WALLET")`
+  gate the backend already enforces on `/api/investments/**` (backend commit
+  `7b51782`). Before this fix, this app's investment endpoints were already
+  returning 403 against that backend version — this was a live regression,
+  not a preventive change. Covered by
+  `test/core/constants/api_constants_test.dart` (asserts the constant is
+  exactly `'wallet'`, never `'academy'`) and the updated
+  `auth_remote_datasource_test.dart`.
+
+Everything else above (nav shell, shared packages, `WalletPetBehavior`,
+deep-link scheme, task 2/3/4/5 findings) is unchanged and still pending —
+tracked under the plan's later stages.

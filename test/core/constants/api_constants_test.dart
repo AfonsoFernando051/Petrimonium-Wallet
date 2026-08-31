@@ -7,6 +7,14 @@ void main() {
       expect(ApiConstants.baseUrl, 'http://localhost:8081');
     });
 
+    test('appContext identifies this binary as the Wallet client', () {
+      // Must never read 'academy' — the backend gates /api/investments/**
+      // behind APP_CONTEXT_WALLET and /api/v1/academy|learning|lab/** behind
+      // APP_CONTEXT_ACADEMY, so this value alone decides which side a login
+      // from this app ends up authorized for.
+      expect(ApiConstants.appContext, 'wallet');
+    });
+
     test('endpoint constants are non-empty and well-formed', () {
       expect(ApiConstants.loginEndpoint, '/auth/login');
       expect(ApiConstants.registerEndpoint, '/auth/register');
