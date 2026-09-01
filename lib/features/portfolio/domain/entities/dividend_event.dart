@@ -84,6 +84,22 @@ class DividendRadar {
 
   DividendEvent? get nextPayment => upcoming.isEmpty ? null : upcoming.first;
 
+  /// Sum of [history] (already-paid) events whose date falls within the
+  /// trailing 12 months — the Proventos tab's "Recebido nos últimos 12
+  /// meses" headline. Same date-window/fallback convention as
+  /// `ProventosEvolutionBarCard`'s monthly grouping (`paymentDate ??
+  /// dataCom ?? approvedOn`), just a flat total instead of a per-month
+  /// bucket. [now] is only for tests; real callers use the default.
+  double receivedInLast12Months({DateTime? now}) {
+    final reference = now ?? DateTime.now();
+    final cutoff = DateTime(reference.year, reference.month - 11, 1);
+    return history.fold<double>(0, (sum, event) {
+      final date = event.paymentDate ?? event.dataCom ?? event.approvedOn;
+      if (date == null || date.isBefore(cutoff)) return sum;
+      return sum + event.estimatedGrossAmount;
+    });
+  }
+
   factory DividendRadar.fromJson(Map<String, dynamic> json) {
     final upcoming = (json['upcoming'] as List<dynamic>? ?? [])
         .map((e) => DividendEvent.fromJson(e as Map<String, dynamic>))

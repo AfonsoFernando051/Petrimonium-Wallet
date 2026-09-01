@@ -152,5 +152,66 @@ void main() {
       expect(radar.upcoming, isEmpty);
       expect(radar.history, isEmpty);
     });
+
+    group('receivedInLast12Months', () {
+      final now = DateTime(2026, 9, 1);
+
+      DividendEvent paidOn(DateTime date, double amount) => DividendEvent(
+            ticker: 'PETR4',
+            type: DividendType.DIVIDENDO,
+            rawLabel: '',
+            ratePerShare: 1,
+            dataCom: null,
+            paymentDate: date,
+            approvedOn: null,
+            userQuantity: 100,
+            estimatedGrossAmount: amount,
+            status: DividendStatus.PAID,
+          );
+
+      test('sums only history events within the trailing 12 months', () {
+        final radar = DividendRadar(
+          upcoming: const [],
+          history: [
+            paidOn(DateTime(2026, 8, 15), 100), // within window
+            paidOn(DateTime(2025, 10, 1), 50), // within window (12 months back)
+            paidOn(DateTime(2025, 8, 1), 30), // just outside the window
+          ],
+        );
+
+        expect(radar.receivedInLast12Months(now: now), 150);
+      });
+
+      test('ignores upcoming (not-yet-paid) events entirely', () {
+        final radar = DividendRadar(
+          upcoming: [paidOn(DateTime(2026, 8, 15), 999)],
+          history: const [],
+        );
+
+        expect(radar.receivedInLast12Months(now: now), 0);
+      });
+
+      test('skips history events with no usable date', () {
+        final undated = DividendEvent(
+          ticker: 'PETR4',
+          type: DividendType.DIVIDENDO,
+          rawLabel: '',
+          ratePerShare: 1,
+          dataCom: null,
+          paymentDate: null,
+          approvedOn: null,
+          userQuantity: 100,
+          estimatedGrossAmount: 500,
+          status: DividendStatus.PAID,
+        );
+        final radar = DividendRadar(upcoming: const [], history: [undated]);
+
+        expect(radar.receivedInLast12Months(now: now), 0);
+      });
+
+      test('returns 0 for an empty radar', () {
+        expect(DividendRadar.empty.receivedInLast12Months(now: now), 0);
+      });
+    });
   });
 }

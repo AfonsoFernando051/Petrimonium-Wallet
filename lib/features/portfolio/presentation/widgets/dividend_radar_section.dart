@@ -81,13 +81,13 @@ class DividendRadarSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (radar.upcoming.isNotEmpty) ...[
-          _subLabel('PRÓXIMOS', AppColors.goldenBorder),
+          _subLabel('PRÓXIMOS PAGAMENTOS', AppColors.goldenBorder),
           const _Divider(),
           for (final event in radar.upcoming) DividendEventTile(event: event),
         ],
         if (radar.history.isNotEmpty) ...[
           if (radar.upcoming.isNotEmpty) const SizedBox(height: 12),
-          _subLabel('HISTÓRICO RECENTE', tokens.success),
+          _subLabel('RECEBIDOS', tokens.success),
           const _Divider(),
           for (final event in radar.history) DividendEventTile(event: event),
         ],

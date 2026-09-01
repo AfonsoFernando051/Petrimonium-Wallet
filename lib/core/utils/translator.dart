@@ -84,6 +84,12 @@ class Translator {
       AppStrings.homeChangeComingSoonNote:
           "Detalhamento por valorização, aportes e rendimentos — em breve.",
       AppStrings.homeHoldingsSectionTitle: "Meus ativos",
+      AppStrings.proventosTitle: "Proventos",
+      AppStrings.proventosSubtitle: "Dividendos, JCP e rendimentos recebidos",
+      AppStrings.proventosReceivedLabel: "Recebido nos últimos 12 meses",
+      AppStrings.proventosNotificationsTitle: "Próximos proventos",
+      AppStrings.proventosNotificationsFooter:
+          "DADO · datas com base ou anunciadas — podem mudar até a confirmação.",
       AppStrings.createAccount: "Criar Conta",
       AppStrings.fillDetails: "Preencha seus dados",
       AppStrings.nameHint: "Nome Completo",
@@ -717,6 +723,12 @@ class Translator {
       AppStrings.homeChangeComingSoonNote:
           "Breakdown by appreciation, contributions and income — coming soon.",
       AppStrings.homeHoldingsSectionTitle: "My assets",
+      AppStrings.proventosTitle: "Income",
+      AppStrings.proventosSubtitle: "Dividends, JCP and income received",
+      AppStrings.proventosReceivedLabel: "Received in the last 12 months",
+      AppStrings.proventosNotificationsTitle: "Upcoming income",
+      AppStrings.proventosNotificationsFooter:
+          "DATA · announced or estimated dates — may change until confirmed.",
       AppStrings.createAccount: "Create Account",
       AppStrings.fillDetails: "Fill in your details",
       AppStrings.nameHint: "Full Name",
@@ -1343,6 +1355,12 @@ class Translator {
       AppStrings.homeChangeComingSoonNote:
           "Desglose por valorización, aportes e ingresos — próximamente.",
       AppStrings.homeHoldingsSectionTitle: "Mis activos",
+      AppStrings.proventosTitle: "Proventos",
+      AppStrings.proventosSubtitle: "Dividendos, JCP e ingresos recibidos",
+      AppStrings.proventosReceivedLabel: "Recibido en los últimos 12 meses",
+      AppStrings.proventosNotificationsTitle: "Próximos proventos",
+      AppStrings.proventosNotificationsFooter:
+          "DATO · fechas anunciadas o estimadas — pueden cambiar hasta la confirmación.",
       AppStrings.createAccount: "Crear Cuenta",
       AppStrings.fillDetails: "Completa tus datos",
       AppStrings.nameHint: "Nombre Completo",

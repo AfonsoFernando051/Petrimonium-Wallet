@@ -69,6 +69,10 @@ void main() {
       expect(find.byType(PassiveIncomeCard), findsOneWidget);
       expect(find.byType(AppLoadingIndicator), findsNothing);
       expect(find.byType(ErrorBanner), findsNothing);
+      expect(find.text('Proventos'), findsOneWidget);
+      expect(find.text('Dividendos, JCP e rendimentos recebidos'), findsOneWidget);
+      expect(find.text('Recebido nos últimos 12 meses'), findsOneWidget);
+      expect(find.text('CÁLCULO DETERMINÍSTICO'), findsOneWidget);
     });
 
     testWidgets('shows an ErrorBanner when the controller reports an error, without blocking the rest of the screen', (WidgetTester tester) async {

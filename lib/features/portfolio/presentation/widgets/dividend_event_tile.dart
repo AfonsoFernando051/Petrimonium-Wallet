@@ -46,9 +46,13 @@ class DividendEventTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      event.ticker,
-                      style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                    Flexible(
+                      child: Text(
+                        event.ticker,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Container(
@@ -74,23 +78,31 @@ class DividendEventTile extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                AppFormatters.currency(event.estimatedGrossAmount),
-                style: TextStyle(
-                  color: isPaid ? tokens.success : AppColors.goldenBorder,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppFormatters.currency(event.estimatedGrossAmount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isPaid ? tokens.success : AppColors.goldenBorder,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${event.userQuantity.toStringAsFixed(0)} cotas · ${AppFormatters.currency(event.ratePerShare)}/cota',
-                style: TextStyle(color: tokens.textSecondary, fontSize: 10),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  '${event.userQuantity.toStringAsFixed(0)} cotas · ${AppFormatters.currency(event.ratePerShare)}/cota',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 10),
+                ),
+              ],
+            ),
           ),
         ],
       ),

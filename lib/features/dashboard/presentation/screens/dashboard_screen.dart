@@ -373,21 +373,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // A compact anchored popover under the bell, not a full-width bottom
+  // sheet — matches the Wallet design system's denser, less decorative
+  // chrome. `showGeneralDialog` + top-right `Align` approximates a real
+  // anchored popover without needing the bell's exact on-screen `RenderBox`.
   void _openNotifications() {
     HapticFeedback.selectionClick();
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => AnimatedBuilder(
-        animation: _portfolioController,
-        builder: (context, _) => DividendNotificationsSheet(
-          isLoading: _portfolioController.isDividendRadarLoading,
-          error: _portfolioController.dividendRadarError,
-          upcoming: _portfolioController.dividendRadar.upcoming,
-          onRetry: _portfolioController.refreshDividendRadar,
-        ),
-      ),
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SafeArea(
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 56, right: 8),
+              child: AnimatedBuilder(
+                animation: _portfolioController,
+                builder: (context, _) => DividendNotificationsSheet(
+                  isLoading: _portfolioController.isDividendRadarLoading,
+                  error: _portfolioController.dividendRadarError,
+                  upcoming: _portfolioController.dividendRadar.upcoming,
+                  onRetry: _portfolioController.refreshDividendRadar,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+            alignment: Alignment.topRight,
+            child: child,
+          ),
+        );
+      },
     );
   }
 

@@ -73,8 +73,8 @@ void main() {
         radar: const DividendRadar(upcoming: [event], history: [event, event]),
       ));
 
-      expect(find.text('PRÓXIMOS'), findsOneWidget);
-      expect(find.text('HISTÓRICO RECENTE'), findsOneWidget);
+      expect(find.text('PRÓXIMOS PAGAMENTOS'), findsOneWidget);
+      expect(find.text('RECEBIDOS'), findsOneWidget);
       expect(find.byType(DividendEventTile), findsNWidgets(3));
     });
   });

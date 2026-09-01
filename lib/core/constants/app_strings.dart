@@ -37,6 +37,13 @@ class AppStrings {
   static const String homeChangeComingSoonNote = "homeChangeComingSoonNote";
   static const String homeHoldingsSectionTitle = "homeHoldingsSectionTitle";
 
+  // Proventos tab + notification popover.
+  static const String proventosTitle = "proventosTitle";
+  static const String proventosSubtitle = "proventosSubtitle";
+  static const String proventosReceivedLabel = "proventosReceivedLabel";
+  static const String proventosNotificationsTitle = "proventosNotificationsTitle";
+  static const String proventosNotificationsFooter = "proventosNotificationsFooter";
+
   // Signup
   static const String createAccount = "createAccount";
   static const String fillDetails = "fillDetails";
