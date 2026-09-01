@@ -22,7 +22,12 @@ import 'package:petrimonium/features/mentor/presentation/widgets/typing_indicato
 /// `PetShowcase` self-manages its pet fetch) rather than sharing dashboard's
 /// portfolio/mascot controllers, since the conversation is self-contained.
 class MentorScreen extends StatefulWidget {
-  const MentorScreen({super.key});
+  const MentorScreen({super.key, this.initialConversationId});
+
+  /// Opens straight into a past conversation instead of a blank chat — used
+  /// by Home's Mentor card ("Por que estou vendo isto?") to resume the exact
+  /// conversation its interpretation came from.
+  final int? initialConversationId;
 
   @override
   State<MentorScreen> createState() => _MentorScreenState();
@@ -40,10 +45,23 @@ class _MentorScreenState extends State<MentorScreen> {
     super.initState();
     _controller = MentorChatController(repository: DI.mentorChatRepository);
     _controller.addListener(_onControllerChanged);
-    _controller.loadConversation(null);
+    _controller.loadConversation(widget.initialConversationId);
     _controller.loadSuggestedPrompts();
     DI.mentorChatRepository.purgeLegacyLocalHistory();
     _fetchPetAvatar();
+  }
+
+  @override
+  void didUpdateWidget(MentorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // DashboardScreen keeps a single MentorScreen instance alive in its
+    // IndexedStack — switching tabs alone never re-runs initState, so a new
+    // initialConversationId (Home's "Por que estou vendo isto?" link) has to
+    // be picked up here instead.
+    if (widget.initialConversationId != null &&
+        widget.initialConversationId != oldWidget.initialConversationId) {
+      _controller.loadConversation(widget.initialConversationId);
+    }
   }
 
   Future<void> _fetchPetAvatar() async {

@@ -228,6 +228,10 @@ void main() {
     testWidgets('routes to DashboardScreen once every onboarding step is resolved', (tester) async {
       final authRepository = MockAuthRepository();
       when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
+      // OverviewScreen (Home tab) derives its greeting's display name from
+      // the saved email — needs a stub or mocktail throws on the
+      // unstubbed Future<String?> call.
+      when(() => authRepository.getSavedEmail()).thenAnswer((_) async => null);
       DI.authRepository = authRepository;
 
       final petRepository = MockPetRepository();

@@ -12,21 +12,14 @@ import '../../../../core/utils/translator.dart';
 import '../../../../core/widgets/confirm_logout_dialog.dart';
 import '../../../../core/widgets/cosmic_background.dart';
 import '../../../../core/di/dependency_injection.dart';
-import '../../../../core/events/app_event.dart';
-import '../../../../core/events/app_event_bus.dart';
 import '../../../../core/utils/game_snack.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
-import '../../../game/domain/services/level_calculator.dart';
 import '../../../home/presentation/screens/overview_screen.dart';
 import '../../../pet/presentation/mascot/controllers/mascot_controller.dart';
-import '../../../portfolio/domain/entities/achievement.dart';
 import '../../../portfolio/presentation/controllers/portfolio_controller.dart';
 import '../../../portfolio/presentation/screens/passive_income_screen.dart';
-import '../../../portfolio/presentation/screens/portfolio_screen.dart';
-import '../../../portfolio/presentation/widgets/achievement_celebration_overlay.dart';
 import '../../../portfolio/presentation/widgets/dividend_notifications_sheet.dart';
 import '../../../mentor/presentation/screens/mentor_screen.dart';
-import '../../../pet/presentation/celebration/level_up_celebration_overlay.dart';
 import '../../../pet/presentation/companion/pet_companion_controller.dart';
 import '../../../pet/presentation/companion/pet_context.dart';
 import '../../../pet/presentation/companion/widgets/pet_companion_header.dart';
@@ -45,9 +38,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
-  // Shared across the Início (Home) and Carteira (Portfolio) tabs so both
-  // reflect the same real holdings/summary/allocation data and a single
-  // in-flight load — no duplicate fetches, no drift between tabs.
+  // Feeds Início's patrimônio/holdings sections — a single in-flight load,
+  // shared with whatever else in this screen still touches portfolio data.
   late final MascotController _mascotController;
   late final PortfolioController _portfolioController;
 
@@ -68,28 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   PetSpeechBubbleAnchor get _activeCompanionAnchor =>
       _selectedIndex == 0 ? _heroAnchor : _headerAnchor;
 
-  // Newly-unlocked achievements awaiting their celebration overlay (see
-  // `PortfolioController.newlyUnlocked`) — previously these unlocked
-  // completely silently, with no on-screen reward moment at all.
-  List<Achievement> _celebrating = [];
-
-  // The level just reached, awaiting `LevelUpCelebrationOverlay` — `null`
-  // when there's no level-up celebration to show. Replaces the old plain
-  // `GameSnack` toast with a real reward moment that doubles as a
-  // social-share prompt.
-  int? _celebratingLevel;
-
-  // Whether the pet should nudge the user about the (skipped) portfolio
-  // step this session, and whether the risk-assessment questionnaire is
-  // still unanswered — both feed the "what to do now" placeholder content
-  // shown when there's no live portfolio yet.
-  bool _showPortfolioReminder = false;
-  bool _investorProfileUnanswered = false;
-
-  // First real consumer of `AppEventBus`: reacts to game-progression events
-  // (currently just level-ups) without the emitter (`MascotController`)
-  // knowing this screen exists.
-  StreamSubscription<AppEvent>? _eventSubscription;
+  // Which conversation the Mentor tab should open into — set by Home's
+  // Mentor card ("Por que estou vendo isto?") to resume the exact
+  // conversation its interpretation came from; `null` opens a blank chat as
+  // usual. `MentorScreen` stays mounted in the IndexedStack below, so
+  // `didUpdateWidget` (not `initState`) is what actually picks this up.
+  int? _pendingMentorConversationId;
 
   @override
   void initState() {
@@ -114,15 +90,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // notification bell's badge reflects real upcoming payments as soon as
     // the dashboard opens, even if the user never taps into Proventos.
     _portfolioController.loadDividendRadarIfNeeded();
-    _loadOnboardingSignals();
-    _eventSubscription = AppEventBus.instance.stream.listen(_onAppEvent);
-  }
-
-  void _onAppEvent(AppEvent event) {
-    if (!mounted) return;
-    if (event is UserLeveledUpEvent) {
-      setState(() => _celebratingLevel = event.newLevel);
-    }
   }
 
   Future<void> _initCompanionGreeting() async {
@@ -131,45 +98,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _companionController.enterContext(PetContext.home);
   }
 
-  Future<void> _loadOnboardingSignals() async {
-    final showReminder = await DI.onboardingStateRepository
-        .shouldShowPortfolioReminder();
-    if (showReminder) {
-      // Recorded the moment we decide to show it, not on dismiss — so a
-      // user who just navigates away without tapping anything still gets
-      // the cooldown, instead of seeing it again next session.
-      final sessionCount = await DI.onboardingStateRepository
-          .currentSessionCount();
-      await DI.onboardingStateRepository.markReminderShown(sessionCount);
-    }
-
-    bool investorProfileUnanswered = false;
-    try {
-      final status = await DI.onboardingRepository.getStatus();
-      investorProfileUnanswered = !status.hasAnswered;
-    } catch (_) {
-      // Non-critical suggestion — if the status check fails, just omit it.
-    }
-    if (!mounted) return;
-    setState(() {
-      _showPortfolioReminder = showReminder;
-      _investorProfileUnanswered = investorProfileUnanswered;
-    });
-  }
-
   void _onPortfolioChanged() {
     setState(() {
-      if (_portfolioController.newlyUnlocked.isNotEmpty) {
-        _celebrating = _portfolioController.newlyUnlocked;
-        _portfolioController.clearNewlyUnlocked();
-      }
       // The Proventos tab can disappear if the holdings that justified it
       // (ações/FIIs/fundos) get sold off mid-session — bounce back to
-      // Carteira rather than leaving the user stranded on a tab with no nav
+      // Início rather than leaving the user stranded on a tab with no nav
       // item pointing at it.
       if (_selectedIndex == DashboardTabRouter.passiveIncomeTab &&
           !_visibleTabIndices.contains(_selectedIndex)) {
-        _selectedIndex = DashboardTabRouter.walletTab;
+        _selectedIndex = DashboardTabRouter.homeTab;
       }
     });
   }
@@ -181,7 +118,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // `PortfolioController.hasDividendPayingHoldings`.
   List<int> get _visibleTabIndices => [
     DashboardTabRouter.homeTab,
-    DashboardTabRouter.walletTab,
     if (_portfolioController.hasDividendPayingHoldings)
       DashboardTabRouter.passiveIncomeTab,
     DashboardTabRouter.mentorTab,
@@ -189,7 +125,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    _eventSubscription?.cancel();
     _portfolioController.removeListener(_onPortfolioChanged);
     _portfolioController.dispose();
     _companionController.dispose();
@@ -247,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // Wallet has no in-app Academy tab — Academy is a separate app.
         _showAcademyComingSoon();
       case PetContext.portfolio:
-        _onTabSelected(DashboardTabRouter.walletTab);
+        _onTabSelected(DashboardTabRouter.homeTab);
       case PetContext.mentor:
         _onTabSelected(DashboardTabRouter.mentorTab);
       case PetContext.home:
@@ -258,8 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // Wallet has no in-app Academy tab or shared code with the Academy app —
-  // see `AcademyBridgeCta`'s class doc for why this is a graceful
-  // placeholder rather than a broken/no-op tap target, until real
+  // a graceful placeholder rather than a broken/no-op tap target, until real
   // OS-level deep-linking exists.
   void _showAcademyComingSoon() {
     GameSnack.show(
@@ -338,7 +272,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 index: _selectedIndex,
                 children: [
                   _buildHomeContent(),
-                  _buildWalletContent(),
                   _buildPassiveIncomeContent(),
                   _buildMentorContent(),
                 ],
@@ -353,29 +286,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _handleCompanionDestination(action.destination),
             ),
           ),
-          if (_celebrating.isNotEmpty)
-            AchievementCelebrationOverlay(
-              achievements: _celebrating,
-              onDismiss: () => setState(() => _celebrating = []),
-            ),
-          if (_celebratingLevel != null)
-            LevelUpCelebrationOverlay(
-              newLevel: _celebratingLevel!,
-              mascotController: _mascotController,
-              onDismiss: () => setState(() => _celebratingLevel = null),
-            ),
         ],
       ),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // ── AppBar title — compact player HUD, anchored by the persistent pet
-  // companion (`docs/PROJECT_CONTEXT.md`'s Pet Companion section) ─────────
+  // ── AppBar title — Wallet brand mark (mascot + "PETRIMONIUM WALLET", same
+  // as the login screen), anchored by the persistent pet companion
+  // (`docs/PROJECT_CONTEXT.md`'s Pet Companion section). No level/XP HUD
+  // here — that framing belongs to the Academy, not a real-money app.
   Widget _buildAppBarTitle() {
-    // Real level derived from the same accumulated XP that drives pet
-    // evolution (`MascotController.profile.xp`), not a hardcoded number.
-    final level = LevelCalculator.fromXp(_mascotController.profile.xp).level;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -386,39 +307,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(width: 8),
         Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Invest Game',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodyEmphasis.copyWith(
-                  color: context.colors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                _mascotController.profile.name?.isNotEmpty == true
-                    ? Translator.translate(
-                        AppStrings.appBarPlayerNamedGreeting,
-                        params: {
-                          'petName': _mascotController.profile.name!,
-                          'level': '$level',
-                        },
-                      )
-                    : Translator.translate(
-                        AppStrings.appBarPlayerGenericGreeting,
-                        params: {'level': '$level'},
-                      ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.caption.copyWith(
-                  color: context.colors.primary.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
+          child: Text(
+            Translator.translate(AppStrings.brandTitle).toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: context.colors.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+            ),
           ),
         ),
       ],
@@ -493,28 +391,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ── Visão Geral: real-portfolio dashboard (docs/ECOSYSTEM.md Stage 5) ────
-  // Replaces the old learning-first `HomeScreen`. Both this and Carteira
-  // share `_portfolioController`/`_mascotController` so they always agree.
+  // ── Início: unified patrimônio + Mentor dashboard, absorbing what used to
+  // be a separate Carteira tab (see `DashboardTabRouter`'s class doc). ─────
   Widget _buildHomeContent() {
     return OverviewScreen(
       controller: _portfolioController,
-      showPortfolioReminder: _showPortfolioReminder,
-      onDismissPortfolioReminder: () =>
-          setState(() => _showPortfolioReminder = false),
-      investorProfileUnanswered: _investorProfileUnanswered,
-      onOpenPortfolioTab: () =>
-          setState(() => _selectedIndex = DashboardTabRouter.walletTab),
+      onOpenMentor: _openMentorFromHome,
     );
   }
 
-  // ── Wallet / Portfolio ───────────────────────────────────────────────────
-  Widget _buildWalletContent() {
-    return PortfolioScreen(
-      controller: _portfolioController,
-      mascotController: _mascotController,
-      onOpenAcademyTab: _showAcademyComingSoon,
-    );
+  void _openMentorFromHome(int? conversationId) {
+    setState(() {
+      _pendingMentorConversationId = conversationId;
+      _selectedIndex = DashboardTabRouter.mentorTab;
+    });
   }
 
   // ── Proventos / Passive Income ────────────────────────────────────────────
@@ -524,7 +414,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── Mentor: AI-powered chat with the pet acting as investment mentor ────
   Widget _buildMentorContent() {
-    return const MentorScreen();
+    return MentorScreen(initialConversationId: _pendingMentorConversationId);
   }
 
   // ── Bottom Nav ────────────────────────────────────────────────────────────
@@ -534,20 +424,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   BottomNavigationBarItem _navItemFor(int tabIndex) {
     return switch (tabIndex) {
       DashboardTabRouter.homeTab => BottomNavigationBarItem(
-        icon: const Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Icon(Icons.rocket_launch_outlined),
-        ),
-        activeIcon: const Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Icon(Icons.rocket_launch),
-        ),
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
         label: Translator.translate(AppStrings.navHome),
-      ),
-      DashboardTabRouter.walletTab => BottomNavigationBarItem(
-        icon: const Icon(Icons.diamond_outlined),
-        activeIcon: const Icon(Icons.diamond),
-        label: Translator.translate(AppStrings.navWallet),
       ),
       DashboardTabRouter.passiveIncomeTab => BottomNavigationBarItem(
         icon: const Icon(Icons.payments_outlined),

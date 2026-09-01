@@ -9,8 +9,7 @@ void main() {
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.homeTab), PetContext.home);
     });
 
-    test('Wallet and Passive Income tabs share PetContext.portfolio', () {
-      expect(DashboardTabRouter.petContextFor(DashboardTabRouter.walletTab), PetContext.portfolio);
+    test('Passive Income tab maps to PetContext.portfolio', () {
       expect(DashboardTabRouter.petContextFor(DashboardTabRouter.passiveIncomeTab), PetContext.portfolio);
     });
 
@@ -21,7 +20,6 @@ void main() {
     test('never maps any tab index to PetContext.academy — Wallet has no Academy tab', () {
       for (final tab in [
         DashboardTabRouter.homeTab,
-        DashboardTabRouter.walletTab,
         DashboardTabRouter.passiveIncomeTab,
         DashboardTabRouter.mentorTab,
       ]) {
@@ -35,8 +33,7 @@ void main() {
       expect(DashboardTabRouter.backgroundIntensityFor(DashboardTabRouter.homeTab), BackgroundIntensity.immersive);
     });
 
-    test('Wallet and Passive Income are balanced', () {
-      expect(DashboardTabRouter.backgroundIntensityFor(DashboardTabRouter.walletTab), BackgroundIntensity.balanced);
+    test('Passive Income is balanced', () {
       expect(DashboardTabRouter.backgroundIntensityFor(DashboardTabRouter.passiveIncomeTab), BackgroundIntensity.balanced);
     });
 
@@ -46,10 +43,9 @@ void main() {
   });
 
   group('DashboardTabRouter.showsHoldingsCount', () {
-    test('true only for Wallet/Passive Income', () {
-      expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.walletTab), isTrue);
+    test('true for Home/Passive Income, false for Mentor', () {
+      expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.homeTab), isTrue);
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.passiveIncomeTab), isTrue);
-      expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.homeTab), isFalse);
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.mentorTab), isFalse);
     });
   });

@@ -26,6 +26,17 @@ class AppStrings {
   static const String quickSetupFooterNote = "quickSetupFooterNote";
   static const String quickSetupCta = "quickSetupCta";
 
+  // Home (Wallet) — unified patrimônio + Mentor screen.
+  static const String homeGreetingLabel = "homeGreetingLabel";
+  static const String homeMentorWhySeeing = "homeMentorWhySeeing";
+  static const String homeWealthSectionTitle = "homeWealthSectionTitle";
+  static const String homeWealthDataChipLabel = "homeWealthDataChipLabel";
+  static const String homeWealthScopePrefix = "homeWealthScopePrefix";
+  static const String homeChangeSectionTitle = "homeChangeSectionTitle";
+  static const String homeChangeCalcChipLabel = "homeChangeCalcChipLabel";
+  static const String homeChangeComingSoonNote = "homeChangeComingSoonNote";
+  static const String homeHoldingsSectionTitle = "homeHoldingsSectionTitle";
+
   // Signup
   static const String createAccount = "createAccount";
   static const String fillDetails = "fillDetails";

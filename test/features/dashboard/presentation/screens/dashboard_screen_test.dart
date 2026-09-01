@@ -210,18 +210,8 @@ void main() {
       await pumpUntilLoaded(tester);
 
       expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.text('Invest Game'), findsOneWidget);
-      expect(navIcon(Icons.rocket_launch), findsOneWidget); // active Home nav icon
-    });
-
-    testWidgets('switching to the Wallet tab shows Wallet nav as active', (tester) async {
-      await tester.pumpWidget(buildTestable());
-      await pumpUntilLoaded(tester);
-
-      await tester.tap(navIcon(Icons.diamond_outlined));
-      await pumpUntilLoaded(tester);
-
-      expect(navIcon(Icons.diamond), findsOneWidget); // active Wallet nav icon
+      expect(find.text('PETRIMONIUM WALLET'), findsOneWidget);
+      expect(navIcon(Icons.home), findsOneWidget); // active Home nav icon
     });
 
     testWidgets('switching to the Mentor tab shows Mentor nav as active', (tester) async {

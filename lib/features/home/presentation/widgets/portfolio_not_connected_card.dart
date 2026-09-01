@@ -5,18 +5,15 @@ import 'package:petrimonium/core/theme/app_color_tokens.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/game_button.dart';
 import 'package:petrimonium/core/widgets/glass_card.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/portfolio_choice_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:petrimonium/features/investment/presentation/screens/investment_configuration_screen.dart';
 
-/// Home's placeholder when the user skipped (or hasn't yet reached) the
-/// portfolio step — the app must stay fully usable without a portfolio, so
-/// this replaces the portfolio-bridge card instead of blocking Home.
+/// Home's placeholder when the user has no holdings yet — the app must stay
+/// fully usable without a portfolio, so this replaces the wealth/holdings
+/// sections instead of blocking Home. There is no real brokerage connection
+/// anywhere in this app (see `docs/ECOSYSTEM.md`) — the CTA opens manual
+/// asset entry, the only way holdings ever get in.
 class PortfolioNotConnectedCard extends StatelessWidget {
-  const PortfolioNotConnectedCard({super.key, this.showInvestorProfileAction = false});
-
-  /// Whether the risk-assessment questionnaire is still unanswered — mirrors
-  /// `DashboardScreen._investorProfileUnanswered`.
-  final bool showInvestorProfileAction;
+  const PortfolioNotConnectedCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,26 +64,10 @@ class PortfolioNotConnectedCard extends StatelessWidget {
               height: 48,
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const PortfolioChoiceScreen()),
+                  MaterialPageRoute(builder: (_) => const InvestmentConfigurationScreen()),
                 );
               },
             ),
-            if (showInvestorProfileAction) ...[
-              const SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-                    );
-                  },
-                  child: Text(
-                    Translator.translate(AppStrings.homeAnswerInvestorProfileLink),
-                    style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
