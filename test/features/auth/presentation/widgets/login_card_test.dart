@@ -30,12 +30,12 @@ void main() {
   }
 
   group('LoginCard', () {
-    testWidgets('renders the LoginForm and the fox artwork icon', (tester) async {
+    testWidgets('renders the fox mascot, brand title and LoginForm', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
 
-      expect(find.byType(LoginForm), findsOneWidget);
       expect(find.byType(Image), findsOneWidget);
-      expect(find.byIcon(Icons.person_outline), findsOneWidget);
+      expect(find.text('PETRIMONIUM WALLET'), findsOneWidget);
+      expect(find.byType(LoginForm), findsOneWidget);
     });
   });
 }

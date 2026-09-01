@@ -53,11 +53,15 @@ void main() {
       .last;
 
   group('LoginForm', () {
-    testWidgets('renders headline, both fields, LoginButton, ForgotPasswordButton and SignupButton', (tester) async {
+    testWidgets('renders the shared-account notice, both fields, LoginButton, ForgotPasswordButton and SignupButton', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
 
-      expect(find.text('Bem-vindo de volta'), findsOneWidget);
-      expect(find.text('Faça login para continuar'), findsOneWidget);
+      expect(
+        find.text(
+          'Mesma conta Petrimonium da Academy. Se você já estudou por lá, seu Pet e suas preferências vêm junto.',
+        ),
+        findsOneWidget,
+      );
       expect(find.byType(CustomTextField), findsNWidgets(2));
       expect(find.byType(LoginButton), findsOneWidget);
       expect(find.byType(GoogleSignInButton), findsOneWidget);

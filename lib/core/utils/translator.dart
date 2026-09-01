@@ -56,6 +56,9 @@ class Translator {
       AppStrings.loginButton: "Entrar",
       AppStrings.continueWithGoogle: "Continuar com Google",
       AppStrings.orDivider: "ou",
+      AppStrings.brandTitle: "Petrimonium Wallet",
+      AppStrings.sharedAccountNotice:
+          "Mesma conta Petrimonium da Academy. Se você já estudou por lá, seu Pet e suas preferências vêm junto.",
       AppStrings.createAccount: "Criar Conta",
       AppStrings.fillDetails: "Preencha seus dados",
       AppStrings.nameHint: "Nome Completo",
@@ -661,6 +664,9 @@ class Translator {
       AppStrings.loginButton: "Login",
       AppStrings.continueWithGoogle: "Continue with Google",
       AppStrings.orDivider: "or",
+      AppStrings.brandTitle: "Petrimonium Wallet",
+      AppStrings.sharedAccountNotice:
+          "Same Petrimonium account as the Academy. If you've already studied there, your Pet and preferences carry over.",
       AppStrings.createAccount: "Create Account",
       AppStrings.fillDetails: "Fill in your details",
       AppStrings.nameHint: "Full Name",
@@ -1259,6 +1265,9 @@ class Translator {
       AppStrings.loginButton: "Entrar",
       AppStrings.continueWithGoogle: "Continuar con Google",
       AppStrings.orDivider: "o",
+      AppStrings.brandTitle: "Petrimonium Wallet",
+      AppStrings.sharedAccountNotice:
+          "Misma cuenta Petrimonium que la Academy. Si ya estudiaste allí, tu Pet y tus preferencias vienen junto.",
       AppStrings.createAccount: "Crear Cuenta",
       AppStrings.fillDetails: "Completa tus datos",
       AppStrings.nameHint: "Nombre Completo",
