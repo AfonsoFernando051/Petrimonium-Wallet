@@ -1,6 +1,4 @@
 import 'package:petrimonium/core/network/api_client.dart';
-import 'package:petrimonium/features/academy/data/datasources/academy_remote_datasource.dart';
-import 'package:petrimonium/features/academy/data/datasources/lab_remote_datasource.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_catalog_repository.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_progress_local_repository.dart';
 import 'package:petrimonium/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -125,14 +123,6 @@ class DI {
   // Not `final` so tests can replace it with a mock repository.
   static AcademyProgressLocalRepository academyProgressRepository =
       AcademyProgressLocalRepository();
-
-  // Not `final` so tests can replace it with a mock datasource.
-  static AcademyRemoteDataSource academyRemoteDataSource =
-      AcademyRemoteDataSource(apiClient: _apiClient);
-
-  // Not `final` so tests can replace it with a mock datasource.
-  static LabRemoteDataSource labRemoteDataSource =
-      LabRemoteDataSource(apiClient: _apiClient);
 
   // Not `final` so tests can replace it with a mock repository.
   static AcademyCatalogRepository academyCatalogRepository =

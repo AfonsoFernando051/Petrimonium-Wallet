@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_theme.dart';
 import 'package:petrimonium/core/utils/translator.dart';
-import 'package:petrimonium/features/academy/data/datasources/academy_remote_datasource.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_catalog_repository.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_progress_local_repository.dart';
 import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -146,8 +145,6 @@ class FakeMascotRepository implements MascotRepository {
 
 class MockAcademyCatalogRepository extends Mock implements AcademyCatalogRepository {}
 
-class MockAcademyRemoteDataSource extends Mock implements AcademyRemoteDataSource {}
-
 class MockOnboardingRepository extends Mock implements OnboardingRepository {}
 
 class MockPetRepository extends Mock implements PetRepository {}
@@ -171,10 +168,6 @@ void main() {
     when(() => mockCatalogRepository.loadCached(any())).thenAnswer((_) async => buildAcademyCatalogSnapshot());
     when(() => mockCatalogRepository.fetchAndCache(any())).thenAnswer((_) async => buildAcademyCatalogSnapshot());
     DI.academyCatalogRepository = mockCatalogRepository;
-
-    final mockRemoteDataSource = MockAcademyRemoteDataSource();
-    when(() => mockRemoteDataSource.getCompletedLessonIds()).thenAnswer((_) async => {});
-    DI.academyRemoteDataSource = mockRemoteDataSource;
 
     final mockOnboardingRepository = MockOnboardingRepository();
     when(() => mockOnboardingRepository.getStatus()).thenAnswer(

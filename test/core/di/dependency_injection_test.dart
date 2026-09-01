@@ -23,7 +23,6 @@ void main() {
       expect(DI.achievementsRepository, isNotNull);
       expect(DI.missionsRepository, isNotNull);
       expect(DI.academyProgressRepository, isNotNull);
-      expect(DI.academyRemoteDataSource, isNotNull);
       expect(DI.academyCatalogRepository, isNotNull);
       expect(DI.mentorChatRepository, isNotNull);
       expect(DI.assetDetailsRepository, isNotNull);

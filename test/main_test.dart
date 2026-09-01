@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/utils/translator.dart';
-import 'package:petrimonium/features/academy/data/datasources/academy_remote_datasource.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_catalog_repository.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_progress_local_repository.dart';
 import 'package:petrimonium/features/auth/data/repositories/auth_repository.dart';
@@ -144,8 +143,6 @@ class FakeMissionsRepository implements MissionsRepository {
 }
 
 class MockAcademyCatalogRepository extends Mock implements AcademyCatalogRepository {}
-
-class MockAcademyRemoteDataSource extends Mock implements AcademyRemoteDataSource {}
 
 void main() {
   setUp(() {
@@ -293,10 +290,13 @@ void main() {
       await onboardingState.markPortfolioSkipped();
       DI.onboardingStateRepository = onboardingState;
 
-      // DashboardScreen's IndexedStack mounts all 5 tabs at once (Home,
-      // Academy, Wallet, Passive Income, Mentor) — every dependency any of
-      // them touch on init needs a working double, or an unmocked real
-      // repository would attempt a real network call from this test.
+      // DashboardScreen's IndexedStack mounts all 4 tabs at once (Home,
+      // Wallet, Passive Income, Mentor) — every dependency any of them touch
+      // on init needs a working double, or an unmocked real repository would
+      // attempt a real network call from this test. academyCatalogRepository/
+      // academyProgressRepository stay mocked even though there's no Academy
+      // tab — the asset-details "Educational Portfolio Intelligence" bridge
+      // (asset_details_controller.dart) is a live, still-shared dependency.
       DI.portfolioRepository = FakePortfolioRepository();
       DI.achievementsLocalRepository = FakeAchievementsLocalRepository();
       DI.achievementsRepository = FakeAchievementsRepository();
@@ -309,9 +309,6 @@ void main() {
       when(() => mockCatalogRepository.fetchAndCache(any())).thenAnswer((_) async => buildAcademyCatalogSnapshot());
       DI.academyCatalogRepository = mockCatalogRepository;
 
-      final mockRemoteDataSource = MockAcademyRemoteDataSource();
-      when(() => mockRemoteDataSource.getCompletedLessonIds()).thenAnswer((_) async => {});
-      DI.academyRemoteDataSource = mockRemoteDataSource;
       when(() => petRepository.getMyPet()).thenAnswer((_) async => null);
 
       await tester.pumpWidget(buildTestable());

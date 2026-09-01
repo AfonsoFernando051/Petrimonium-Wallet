@@ -12,14 +12,12 @@ import 'package:petrimonium/features/pet/domain/enums/pet_evolution_stage.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/presentation/mascot/controllers/mascot_controller.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
-import 'package:petrimonium/features/portfolio/domain/entities/mission_status.dart';
 import 'package:petrimonium/features/portfolio/presentation/controllers/portfolio_controller.dart';
 import 'package:petrimonium/features/portfolio/presentation/screens/portfolio_screen.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/achievements_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/asset_allocation_card.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/hero_summary_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/holdings_section.dart';
-import 'package:petrimonium/features/portfolio/presentation/widgets/missions_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/portfolio_activation_view.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/quick_actions_fab.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/rpg_integration_card.dart';
@@ -163,34 +161,6 @@ void main() {
       expect(find.byType(RpgIntegrationCard), findsOneWidget);
       expect(find.byType(AchievementsSection), findsOneWidget);
       expect(find.byType(QuickActionsFab), findsOneWidget);
-    });
-
-    testWidgets('never shows a MissionsSection — Wallet has no missions/gamification narrative', (
-      WidgetTester tester,
-    ) async {
-      repository.holdingsToReturn = Holding.fromLots([lot()]);
-      missionsRepository.resultToReturn = const MissionEvaluationResult(
-        missions: [
-          MissionStatus(
-            code: 'daily_complete_lesson',
-            period: MissionPeriod.daily,
-            periodKey: '2026-08-19',
-            progress: 0,
-            target: 1,
-            xpReward: 30,
-            completed: false,
-          ),
-        ],
-        newlyCompletedCodes: {},
-        missionXpTotal: 0,
-      );
-      await controller.loadAll();
-
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
-
-      expect(find.byType(MissionsSection), findsNothing);
     });
 
     testWidgets(

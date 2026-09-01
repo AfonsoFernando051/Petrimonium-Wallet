@@ -226,3 +226,55 @@ badges flagged as debt back in the original audit (`positive_return`,
 the earlier "keep as-is for now" decision.
 
 No commits yet for this stage's changes — pending the end-of-stage report.
+
+## Update, 2026-08-31 (Stage 7 — dead-code cleanup, first pass)
+
+Deleted the code Stage 5 deliberately left in place but made unreachable:
+
+- `lib/features/academy/` — 57 of 66 files removed (screens, controllers,
+  Financial Lab, calculators, widgets). Kept 9 files that are a genuine
+  live dependency of the asset-details "Educational Portfolio
+  Intelligence" bridge (`asset_details_controller.dart` → `PortfolioLearningBridge`
+  → `AcademyCatalogRepository`/`AcademyProgressLocalRepository` and the
+  catalog domain models they return): `academy_catalog_repository.dart`,
+  `academy_progress_local_repository.dart`, `academy_catalog_snapshot.dart`,
+  `lesson.dart`, `lesson_step.dart`, `academy_domain.dart`,
+  `academy_module.dart`, `school.dart`, `academy_icon_registry.dart`.
+- The old Academy-heavy `home_screen.dart` (replaced by `overview_screen.dart`
+  in Stage 5), `academy_intro_screen.dart`/`gamification_intro_screen.dart`
+  (onboarding screens the wizard no longer routes through),
+  `missions_section.dart`/`mission_card_widget.dart` (removed from
+  `PortfolioScreen` in Stage 5), and the old Home screen's own dashboard
+  widgets (`next_action_card.dart`, `next_action_resolver.dart`,
+  `knowledge_map_strip.dart`, `learning_hero_card.dart`,
+  `portfolio_bridge_card.dart`) plus their sole remaining dependent,
+  `core/widgets/module_chip.dart`.
+- **Explicitly kept** (confirmed still live despite Academy-adjacent
+  naming): `mission_status.dart`, `missions_remote_datasource.dart`,
+  `missions_repository.dart`, `mission_display_catalog.dart` — all
+  genuinely used by `PortfolioController` for its own mission-XP event
+  bus, independent of the removed `MissionsSection` UI;
+  `academy_bridge_cta.dart`, `portfolio_not_connected_card.dart`,
+  `portfolio_reminder_banner.dart` — live on `overview_screen.dart`;
+  `mission_reward_card.dart` — live on `journey_ready_screen.dart`. The
+  outcome-based badges (`positive_return`, `portfolio_10k`, `portfolio_50k`,
+  `dividend_hunter`) are unchanged, still tracked as debt per Decision 1.
+
+`DI` lost its now-fully-unused `academyRemoteDataSource`/`labRemoteDataSource`
+fields; `integration_test/app_test.dart` lost its Academy-tab drill-down
+assertions and its `LessonScreen`-based module-completion test (both
+exercised now-deleted screens) while keeping its still-valid
+`AcademyCatalogRepository` cache-staleness test (that repository is one of
+the 9 kept-live files).
+
+One recovery during this pass: an initial bulk deletion of
+`test/features/academy/` also caught `academy_test_fixtures.dart` and the 9
+test files for the kept-live files above, despite them not being dead —
+restored from git history before committing, since `flutter analyze`
+caught the break immediately.
+
+Full suite: 1303 unit/widget tests + 4 Linux integration tests, all green.
+`flutter analyze`: no issues. `flutter build linux --debug`: succeeds.
+
+Not done in this pass (tracked as debt, deferred until it becomes load-bearing):
+the outcome-based badges migration.

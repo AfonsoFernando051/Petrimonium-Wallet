@@ -9,12 +9,6 @@ import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/network/api_client.dart';
 import 'package:petrimonium/core/utils/translator.dart';
-import 'package:petrimonium/features/academy/presentation/screens/academy_domain_detail_screen.dart';
-import 'package:petrimonium/features/academy/presentation/screens/academy_home_screen.dart';
-import 'package:petrimonium/features/academy/presentation/screens/lesson_screen.dart';
-import 'package:petrimonium/features/academy/presentation/widgets/academy_domain_card.dart';
-import 'package:petrimonium/features/academy/presentation/widgets/school_card.dart';
-import 'package:petrimonium/features/academy/domain/entities/lesson_completion_result.dart';
 import 'package:petrimonium/features/academy/data/repositories/academy_catalog_repository.dart';
 import 'package:petrimonium/features/auth/data/repositories/auth_repository.dart';
 import 'package:petrimonium/features/auth/presentation/screens/login_screen.dart';
@@ -37,16 +31,10 @@ import 'package:petrimonium/features/pet/domain/entities/pet_profile.dart';
 import 'package:petrimonium/features/pet/domain/enums/pet_evolution_stage.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart';
-import 'package:petrimonium/features/pet/presentation/celebration/module_completion_share_overlay.dart';
-import 'package:petrimonium/features/pet/presentation/mascot/controllers/mascot_controller.dart';
-import 'package:petrimonium/core/theme/app_theme.dart';
-import 'package:petrimonium/core/widgets/game_button.dart';
 import 'package:petrimonium/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../test/features/academy/academy_test_fixtures.dart';
-import '../test/features/academy/presentation/screens/academy_home_screen_test.dart'
-    show MockAcademyCatalogRepository, MockAcademyRemoteDataSource;
 import '../test/features/portfolio/presentation/controllers/portfolio_controller_test.dart'
     show
         FakePortfolioRepository,
@@ -72,6 +60,8 @@ class MockPetCompanionPreferencesRepository extends Mock
 class MockMentorChatRepository extends Mock implements MentorChatRepository {}
 
 class MockApiClient extends Mock implements ApiClient {}
+
+class MockAcademyCatalogRepository extends Mock implements AcademyCatalogRepository {}
 
 /// The app's one real end-to-end flow: a returning, fully-onboarded user
 /// logs in and lands on [DashboardScreen] — exercising `MyApp`'s real
@@ -210,10 +200,10 @@ void main() {
       () => mockOnboardingStateRepository.markPortfolioSkipped(),
     ).thenAnswer((_) async {});
 
-    // Academy catalog — a real (fake-backed) snapshot with one contentAvailable
-    // school and one comingSoon school, so the "does a school still render
-    // with zero investments / after skipping portfolio setup" flow below has
-    // real content to assert on rather than an empty catalog.
+    // academyCatalogRepository — Wallet has no Academy tab, but the
+    // asset-details "Educational Portfolio Intelligence" bridge
+    // (asset_details_controller.dart) still reads it, so every DI field
+    // still needs a working double for DashboardScreen to render.
     final mockAcademyCatalogRepository = MockAcademyCatalogRepository();
     when(
       () => mockAcademyCatalogRepository.loadCached(any()),
@@ -222,30 +212,6 @@ void main() {
       () => mockAcademyCatalogRepository.fetchAndCache(any()),
     ).thenAnswer((_) async => buildAcademyCatalogSnapshot());
     DI.academyCatalogRepository = mockAcademyCatalogRepository;
-
-    final mockAcademyRemoteDataSource = MockAcademyRemoteDataSource();
-    when(
-      () => mockAcademyRemoteDataSource.getCompletedLessonIds(),
-    ).thenAnswer((_) async => {});
-    when(
-      () => mockAcademyRemoteDataSource.completeLesson(
-        any(),
-        perfectFirstTry: any(named: 'perfectFirstTry'),
-      ),
-    ).thenAnswer(
-      (_) async => const LessonCompletionResult(
-        lessonId: 'test_lesson_3',
-        alreadyCompleted: false,
-        xpAwarded: 20,
-        moduleCompleted: true,
-        moduleXpAwarded: 0,
-        totalXp: 60,
-        level: 2,
-        xpIntoLevel: 10,
-        xpForNextLevel: 100,
-      ),
-    );
-    DI.academyRemoteDataSource = mockAcademyRemoteDataSource;
 
     // DashboardScreen's own dependencies — an empty-but-valid portfolio so
     // the screen renders without error (its content is exercised in detail
@@ -382,36 +348,6 @@ void main() {
       ).called(1);
       expect(find.byType(DashboardScreen), findsOneWidget);
       expect(find.byType(PortfolioChoiceScreen), findsNothing);
-
-      // Switch to the Academy tab and let AcademyController's catalog load
-      // (loadCached, then fetchAndCache) drain.
-      await tester.tap(
-        find.descendant(
-          of: find.byType(BottomNavigationBar),
-          matching: find.byIcon(Icons.school_outlined),
-        ),
-      );
-      for (var i = 0; i < 6; i++) {
-        await tester.pump();
-      }
-
-      expect(find.byType(AcademyHomeScreen), findsOneWidget);
-
-      // Drill into the one domain in the fake catalog to reach its schools —
-      // AcademyHomeScreen itself lists domains, not schools directly.
-      await tester.ensureVisible(find.byType(AcademyDomainCard).first);
-      await tester.pump();
-      await tester.tap(find.byType(AcademyDomainCard).first);
-      await tester.pump(); // HapticFeedback + Navigator.push starts
-      await tester.pump(
-        const Duration(milliseconds: 300),
-      ); // fade/slide page transition
-      for (var i = 0; i < 6; i++) {
-        await tester.pump();
-      }
-
-      expect(find.byType(AcademyDomainDetailScreen), findsOneWidget);
-      expect(find.byType(SchoolCard), findsWidgets);
     },
   );
 
@@ -458,47 +394,6 @@ void main() {
     expect(find.text('O que devo estudar antes de investir?'), findsOneWidget);
     expect(find.text('Como analisar minha carteira?'), findsOneWidget);
     verify(() => mockMentorChatRepository.loadSuggestedPrompts()).called(1);
-  });
-
-  testWidgets('finishing a module opens its social-share celebration', (
-    tester,
-  ) async {
-    // Simulate a learner who already completed the first two lessons and is
-    // now completing the module's final lesson through the real lesson UI.
-    await DI.academyProgressRepository.markLessonCompleted(testLesson1.id);
-    await DI.academyProgressRepository.markLessonCompleted(testLesson2.id);
-
-    final mascotController = MascotController(repository: mockMascotRepository);
-    await mascotController.loadProfile();
-    addTearDown(mascotController.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark,
-        home: LessonScreen(
-          lesson: testLesson3,
-          catalog: buildAcademyCatalogSnapshot(),
-          mascotController: mascotController,
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    await tester.tap(find.byType(GameButton));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump();
-
-    expect(find.byType(ModuleCompletionShareOverlay), findsOneWidget);
-    expect(find.text('Módulo concluído!'), findsOneWidget);
-    expect(find.text(testModule.title), findsOneWidget);
-    expect(find.text('Compartilhar'), findsOneWidget);
-    expect(mascotController.profile.xp, 60);
-
-    // Completion starts the mascot's four-second victory animation; drain
-    // its delayed reset so this integration test leaves no pending timer.
-    await tester.pump(const Duration(seconds: 5));
   });
 
   test('academy replaces the stale all-blocked catalog with available schools', () async {
