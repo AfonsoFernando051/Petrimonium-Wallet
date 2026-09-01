@@ -52,9 +52,10 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
-        expect(find.text('Seu Mentor'), findsOneWidget);
+        expect(find.text('Mentor'), findsOneWidget);
+        expect(find.text('Não executa transações · não é consultoria regulada'), findsOneWidget);
         expect(
-          find.text('Oi! Eu sou seu mentor de investimentos.'),
+          find.text('Posso te ajudar a entender sua carteira ou tirar dúvidas.'),
           findsOneWidget,
         );
         expect(find.byType(SuggestedPromptChip), findsWidgets);
@@ -136,6 +137,28 @@ void main() {
           currentScreen: 'mentor',
         ),
       ).called(1);
+    });
+
+    testWidgets('shows a "Hoje" date separator before today\'s messages', (tester) async {
+      when(
+        () => mockMentorChatRepository.sendMessage(
+          message: any(named: 'message'),
+          conversationId: any(named: 'conversationId'),
+          currentScreen: any(named: 'currentScreen'),
+        ),
+      ).thenAnswer(
+        (_) async => const MentorChatResult(reply: 'Olá!', conversationId: 3),
+      );
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.byType(SuggestedPromptChip).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Hoje'), findsOneWidget);
     });
   });
 }

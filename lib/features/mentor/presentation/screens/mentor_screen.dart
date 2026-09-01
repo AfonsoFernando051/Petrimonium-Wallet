@@ -4,6 +4,7 @@ import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
 import 'package:petrimonium/core/theme/app_motion.dart';
+import 'package:petrimonium/core/utils/formatters.dart';
 import 'package:petrimonium/core/utils/pet_assets.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/app_loading_indicator.dart';
@@ -225,7 +226,7 @@ class _MentorScreenState extends State<MentorScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Seu Mentor',
+                  'Mentor',
                   style: TextStyle(
                     color: tokens.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -233,7 +234,7 @@ class _MentorScreenState extends State<MentorScreen> {
                   ),
                 ),
                 Text(
-                  'Educação financeira, no seu ritmo',
+                  'Não executa transações · não é consultoria regulada',
                   style: TextStyle(color: tokens.textSecondary, fontSize: 11),
                 ),
               ],
@@ -276,20 +277,37 @@ class _MentorScreenState extends State<MentorScreen> {
       return _buildEmptyState();
     }
 
-    final messages = _controller.messages;
-    final itemCount = messages.length + (_showTypingIndicator ? 1 : 0);
+    final items = _buildTimelineItems(_controller.messages);
 
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: itemCount,
+      itemCount: items.length + (_showTypingIndicator ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index >= messages.length) {
+        if (index >= items.length) {
           return const TypingIndicator();
         }
-        return ChatBubble(message: messages[index]);
+        final item = items[index];
+        return item is DateTime ? _DateSeparator(date: item) : ChatBubble(message: item as ChatMessage);
       },
     );
+  }
+
+  /// Flattens [messages] into a single render list, inserting a `DateTime`
+  /// marker (rendered by [_DateSeparator]) whenever the calendar day changes
+  /// — "Hoje" between message groups, per the Mentor chat mockup.
+  List<Object> _buildTimelineItems(List<ChatMessage> messages) {
+    final items = <Object>[];
+    DateTime? lastDay;
+    for (final message in messages) {
+      final day = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
+      if (lastDay == null || day != lastDay) {
+        items.add(day);
+        lastDay = day;
+      }
+      items.add(message);
+    }
+    return items;
   }
 
   Widget _buildEmptyState() {
@@ -299,26 +317,28 @@ class _MentorScreenState extends State<MentorScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 24),
+          // 52px halo / 40px avatar — the Wallet design system's "avatar
+          // menor" rule (never the Academy's larger 64-118px hero treatment).
           _avatarWithHalo(
-            haloSize: 104,
+            haloSize: 52,
             avatar: CircleAvatar(
-              radius: 40,
+              radius: 20,
               backgroundColor: tokens.surface,
               child: ClipOval(
                 child: Image.asset(
                   _petAsset,
-                  width: 80,
-                  height: 80,
+                  width: 40,
+                  height: 40,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) =>
-                      Icon(Icons.pets, color: tokens.textSecondary, size: 40),
+                      Icon(Icons.pets, color: tokens.textSecondary, size: 20),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Oi! Eu sou seu mentor de investimentos.',
+            'Posso te ajudar a entender sua carteira ou tirar dúvidas.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: tokens.textPrimary,
@@ -328,7 +348,7 @@ class _MentorScreenState extends State<MentorScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Pergunte o que quiser sobre investir — vamos aprender juntos, no seu ritmo.',
+            'Nunca vou comprar, vender ou sugerir uma operação por você.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.textSecondary, fontSize: 13),
           ),
@@ -348,6 +368,35 @@ class _MentorScreenState extends State<MentorScreen> {
                   .toList(),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _DateSeparator extends StatelessWidget {
+  const _DateSeparator({required this.date});
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final label = date == today
+        ? 'Hoje'
+        : date == yesterday
+            ? 'Ontem'
+            : AppFormatters.date(date);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(color: context.colors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
