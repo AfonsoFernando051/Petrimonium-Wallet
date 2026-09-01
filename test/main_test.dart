@@ -13,10 +13,9 @@ import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_sc
 import 'package:petrimonium/features/game/data/datasources/gamification_remote_datasource.dart';
 import 'package:petrimonium/features/game/data/repositories/gamification_repository.dart';
 import 'package:petrimonium/features/game/domain/entities/gamification_summary.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/portfolio_choice_screen.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_state_repository.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/journey_ready_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/mentor_welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
 import 'package:petrimonium/features/pet/domain/entities/pet_profile.dart';
 import 'package:petrimonium/features/pet/domain/enums/accessory_type.dart';
@@ -24,7 +23,6 @@ import 'package:petrimonium/features/pet/domain/enums/pet_accessory_id.dart';
 import 'package:petrimonium/features/pet/domain/enums/pet_evolution_stage.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/financial_goal_screen.dart';
 import 'package:petrimonium/features/portfolio/data/datasources/achievements_remote_datasource.dart';
 import 'package:petrimonium/features/portfolio/data/datasources/missions_remote_datasource.dart';
 import 'package:petrimonium/features/portfolio/data/datasources/portfolio_remote_datasource.dart';
@@ -186,29 +184,7 @@ void main() {
       expect(find.byType(LoginScreen), findsOneWidget);
     });
 
-    testWidgets('routes to WelcomeScreen (meetPet) when the pet has no name yet', (tester) async {
-      final authRepository = MockAuthRepository();
-      when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
-      DI.authRepository = authRepository;
-
-      final petRepository = MockPetRepository();
-      when(() => petRepository.getPetStatus()).thenAnswer((_) async => false);
-      DI.petRepository = petRepository;
-
-      await tester.pumpWidget(buildTestable());
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      expect(find.byType(WelcomeScreen), findsOneWidget);
-
-      // WelcomeScreen's floating icon starts its own repeating-adjacent
-      // Timer (1.2s) — flush it now so it doesn't outlive this test as a
-      // pending timer.
-      await tester.pump(const Duration(seconds: 2));
-    });
-
-    testWidgets('routes to FinancialGoalScreen when the pet is configured but no goal is set', (tester) async {
+    testWidgets("routes to MentorWelcomeScreen when the mentor welcome hasn't been seen yet", (tester) async {
       final authRepository = MockAuthRepository();
       when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
       DI.authRepository = authRepository;
@@ -216,20 +192,18 @@ void main() {
       final petRepository = MockPetRepository();
       when(() => petRepository.getPetStatus()).thenAnswer((_) async => true);
       DI.petRepository = petRepository;
-
-      DI.mascotRepository = _NamedFakeMascotRepository();
-      // hasSetGoal() defaults to false against the real, SharedPreferences-
-      // backed OnboardingStateRepository set up in setUp().
+      // hasSeenMentorWelcome() defaults to false against the real,
+      // SharedPreferences-backed OnboardingStateRepository set up in setUp().
 
       await tester.pumpWidget(buildTestable());
       await tester.pump();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.byType(FinancialGoalScreen), findsOneWidget);
+      expect(find.byType(MentorWelcomeScreen), findsOneWidget);
     });
 
-    testWidgets('routes to JourneyReadyScreen (tutorial) once a goal is set but the tutorial is unfinished', (tester) async {
+    testWidgets("routes to QuickSetupScreen once mentor welcome is seen but quick setup isn't done", (tester) async {
       final authRepository = MockAuthRepository();
       when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
       DI.authRepository = authRepository;
@@ -240,7 +214,7 @@ void main() {
 
       DI.mascotRepository = _NamedFakeMascotRepository();
       final onboardingState = OnboardingStateRepository();
-      await onboardingState.setGoalChosen();
+      await onboardingState.markMentorWelcomeSeen();
       DI.onboardingStateRepository = onboardingState;
 
       await tester.pumpWidget(buildTestable());
@@ -248,30 +222,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.byType(JourneyReadyScreen), findsOneWidget);
-    });
-
-    testWidgets('routes to PortfolioChoiceScreen once tutorial is done but the portfolio step is unresolved', (tester) async {
-      final authRepository = MockAuthRepository();
-      when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
-      DI.authRepository = authRepository;
-
-      final petRepository = MockPetRepository();
-      when(() => petRepository.getPetStatus()).thenAnswer((_) async => true);
-      DI.petRepository = petRepository;
-
-      DI.mascotRepository = _NamedFakeMascotRepository();
-      final onboardingState = OnboardingStateRepository();
-      await onboardingState.setGoalChosen();
-      await onboardingState.completeTutorial();
-      DI.onboardingStateRepository = onboardingState;
-
-      await tester.pumpWidget(buildTestable());
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      expect(find.byType(PortfolioChoiceScreen), findsOneWidget);
+      expect(find.byType(QuickSetupScreen), findsOneWidget);
     });
 
     testWidgets('routes to DashboardScreen once every onboarding step is resolved', (tester) async {
@@ -285,9 +236,8 @@ void main() {
 
       DI.mascotRepository = _NamedFakeMascotRepository();
       final onboardingState = OnboardingStateRepository();
-      await onboardingState.setGoalChosen();
-      await onboardingState.completeTutorial();
-      await onboardingState.markPortfolioSkipped();
+      await onboardingState.markMentorWelcomeSeen();
+      await onboardingState.markQuickSetupDone();
       DI.onboardingStateRepository = onboardingState;
 
       // DashboardScreen's IndexedStack mounts all 4 tabs at once (Home,

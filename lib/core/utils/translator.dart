@@ -59,6 +59,21 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Mesma conta Petrimonium da Academy. Se você já estudou por lá, seu Pet e suas preferências vêm junto.",
+      AppStrings.mentorWelcomeHeadline: "Aqui é sobre o seu patrimônio real.",
+      AppStrings.mentorWelcomeParagraph1:
+          "Na Academy você aprendeu. Aqui você organiza, acompanha e entende seu dinheiro de verdade.",
+      AppStrings.mentorWelcomeParagraph2:
+          "Os dados dependem da atualização do mercado — sempre com data e hora visíveis.",
+      AppStrings.mentorWelcomeParagraph3:
+          "Eu não executo transações nem substituo uma consultoria regulada. Só ajudo a interpretar o que você já tem — sempre citando de onde vem cada informação.",
+      AppStrings.mentorWelcomeCta: "Continuar",
+      AppStrings.quickSetupTitle: "Antes de começar",
+      AppStrings.quickSetupSubtitle: "Só o essencial — dá pra ajustar depois.",
+      AppStrings.quickSetupMarketLabel: "País / mercado",
+      AppStrings.quickSetupCurrencyLabel: "Moeda-base",
+      AppStrings.quickSetupFooterNote:
+          "Você vai adicionar seus ativos manualmente no próximo passo — nada é importado automaticamente ainda.",
+      AppStrings.quickSetupCta: "Continuar",
       AppStrings.createAccount: "Criar Conta",
       AppStrings.fillDetails: "Preencha seus dados",
       AppStrings.nameHint: "Nome Completo",
@@ -667,6 +682,21 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Same Petrimonium account as the Academy. If you've already studied there, your Pet and preferences carry over.",
+      AppStrings.mentorWelcomeHeadline: "This is about your real wealth.",
+      AppStrings.mentorWelcomeParagraph1:
+          "In the Academy you learned. Here you organize, track and understand your real money.",
+      AppStrings.mentorWelcomeParagraph2:
+          "The data depends on market updates — always shown with a date and time.",
+      AppStrings.mentorWelcomeParagraph3:
+          "I don't execute transactions or replace a regulated advisor. I just help interpret what you already have — always citing where each piece of information comes from.",
+      AppStrings.mentorWelcomeCta: "Continue",
+      AppStrings.quickSetupTitle: "Before we start",
+      AppStrings.quickSetupSubtitle: "Just the essentials — you can adjust this later.",
+      AppStrings.quickSetupMarketLabel: "Country / market",
+      AppStrings.quickSetupCurrencyLabel: "Base currency",
+      AppStrings.quickSetupFooterNote:
+          "You'll add your assets manually in the next step — nothing is imported automatically yet.",
+      AppStrings.quickSetupCta: "Continue",
       AppStrings.createAccount: "Create Account",
       AppStrings.fillDetails: "Fill in your details",
       AppStrings.nameHint: "Full Name",
@@ -1268,6 +1298,21 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Misma cuenta Petrimonium que la Academy. Si ya estudiaste allí, tu Pet y tus preferencias vienen junto.",
+      AppStrings.mentorWelcomeHeadline: "Aquí se trata de tu patrimonio real.",
+      AppStrings.mentorWelcomeParagraph1:
+          "En la Academy aprendiste. Aquí organizas, sigues y entiendes tu dinero de verdad.",
+      AppStrings.mentorWelcomeParagraph2:
+          "Los datos dependen de la actualización del mercado — siempre con fecha y hora visibles.",
+      AppStrings.mentorWelcomeParagraph3:
+          "No ejecuto transacciones ni sustituyo una asesoría regulada. Solo ayudo a interpretar lo que ya tienes — siempre citando de dónde viene cada información.",
+      AppStrings.mentorWelcomeCta: "Continuar",
+      AppStrings.quickSetupTitle: "Antes de empezar",
+      AppStrings.quickSetupSubtitle: "Solo lo esencial — se puede ajustar después.",
+      AppStrings.quickSetupMarketLabel: "País / mercado",
+      AppStrings.quickSetupCurrencyLabel: "Moneda base",
+      AppStrings.quickSetupFooterNote:
+          "Vas a agregar tus activos manualmente en el próximo paso — todavía no se importa nada automáticamente.",
+      AppStrings.quickSetupCta: "Continuar",
       AppStrings.createAccount: "Crear Cuenta",
       AppStrings.fillDetails: "Completa tus datos",
       AppStrings.nameHint: "Nombre Completo",

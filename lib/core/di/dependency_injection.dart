@@ -8,6 +8,7 @@ import 'package:petrimonium/features/game/data/repositories/gamification_reposit
 import 'package:petrimonium/features/onboarding/data/datasources/onboarding_remote_datasource.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_state_repository.dart';
+import 'package:petrimonium/features/onboarding/data/repositories/wallet_market_preferences_repository.dart';
 import 'package:petrimonium/features/pet/data/datasources/pet_remote_datasource.dart';
 import 'package:petrimonium/features/pet/data/repositories/pet_repository_impl.dart';
 import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart';
@@ -51,6 +52,10 @@ class DI {
   // Not `final` so tests can replace it with a mock repository.
   static OnboardingStateRepository onboardingStateRepository =
       OnboardingStateRepository();
+
+  // Not `final` so tests can replace it with a mock repository.
+  static WalletMarketPreferencesRepository walletMarketPreferencesRepository =
+      WalletMarketPreferencesRepository();
 
   static final PetRemoteDataSource _petRemoteDataSource = PetRemoteDataSource(
     apiClient: _apiClient,

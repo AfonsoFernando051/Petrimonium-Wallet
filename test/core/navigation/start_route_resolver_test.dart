@@ -51,6 +51,7 @@ class FakeAuthRepository implements AuthRepository {
 class FakePetRepository implements PetRepository {
   bool hasPet = true;
   Object? statusError;
+  final List<PetSpecieEnum> configuredSpecies = [];
 
   @override
   Future<bool> getPetStatus() async {
@@ -59,7 +60,10 @@ class FakePetRepository implements PetRepository {
   }
 
   @override
-  Future<void> configurePet(PetSpecieEnum specie) async {}
+  Future<void> configurePet(PetSpecieEnum specie) async {
+    configuredSpecies.add(specie);
+    hasPet = true;
+  }
 
   @override
   Future<Map<String, dynamic>?> getMyPet() async => null;
@@ -67,12 +71,16 @@ class FakePetRepository implements PetRepository {
 
 class FakeMascotRepository implements MascotRepository {
   PetProfile profileToReturn = PetProfile(name: 'Rex');
+  final List<String> savedNames = [];
 
   @override
   Future<PetProfile> loadProfile() async => profileToReturn;
 
   @override
-  Future<void> saveName(String name) async {}
+  Future<void> saveName(String name) async {
+    savedNames.add(name);
+    profileToReturn = PetProfile(name: name);
+  }
 
   @override
   Future<void> saveStage(PetEvolutionStage stage) async {}
@@ -101,18 +109,33 @@ class FakeMascotRepository implements MascotRepository {
 /// In-memory [OnboardingStateRepository] double for the fields
 /// [StartRouteResolver] actually reads.
 class FakeOnboardingStateRepository implements OnboardingStateRepository {
-  bool hasSetGoalValue = true;
-  bool tutorialCompleted = true;
-  bool portfolioStepDone = true;
+  bool mentorWelcomeSeen = true;
+  bool quickSetupDone = true;
 
   @override
-  Future<bool> hasSetGoal() async => hasSetGoalValue;
+  Future<bool> hasSeenMentorWelcome() async => mentorWelcomeSeen;
 
   @override
-  Future<bool> isTutorialCompleted() async => tutorialCompleted;
+  Future<void> markMentorWelcomeSeen() async {
+    mentorWelcomeSeen = true;
+  }
 
   @override
-  Future<bool> isPortfolioStepDone() async => portfolioStepDone;
+  Future<bool> hasCompletedQuickSetup() async => quickSetupDone;
+
+  @override
+  Future<void> markQuickSetupDone() async {
+    quickSetupDone = true;
+  }
+
+  @override
+  Future<bool> hasSetGoal() async => true;
+
+  @override
+  Future<bool> isTutorialCompleted() async => true;
+
+  @override
+  Future<bool> isPortfolioStepDone() async => true;
 
   @override
   Future<void> setGoalChosen() async {}
@@ -179,59 +202,21 @@ void main() {
     },
   );
 
-  test('logged in but no pet configured routes to meetPet', () async {
-    petRepository.hasPet = false;
+  test('logged in, mentor welcome not seen yet, routes to mentorWelcome', () async {
+    onboardingStateRepository.mentorWelcomeSeen = false;
 
     final route = await resolver.resolve();
 
-    expect(route, StartRoute.meetPet);
+    expect(route, StartRoute.mentorWelcome);
   });
 
-  test('pet configured but unnamed routes to meetPet', () async {
-    mascotRepository.profileToReturn = PetProfile(name: null);
+  test('welcome seen but quick setup not done routes to quickSetup', () async {
+    onboardingStateRepository.quickSetupDone = false;
 
     final route = await resolver.resolve();
 
-    expect(route, StartRoute.meetPet);
+    expect(route, StartRoute.quickSetup);
   });
-
-  test('pet configured but name is blank routes to meetPet', () async {
-    mascotRepository.profileToReturn = PetProfile(name: '   ');
-
-    final route = await resolver.resolve();
-
-    expect(route, StartRoute.meetPet);
-  });
-
-  test(
-    'pet ready but no financial goal chosen routes to financialGoal',
-    () async {
-      onboardingStateRepository.hasSetGoalValue = false;
-
-      final route = await resolver.resolve();
-
-      expect(route, StartRoute.financialGoal);
-    },
-  );
-
-  test('goal chosen but tutorial unfinished routes to tutorial', () async {
-    onboardingStateRepository.tutorialCompleted = false;
-
-    final route = await resolver.resolve();
-
-    expect(route, StartRoute.tutorial);
-  });
-
-  test(
-    'tutorial done but portfolio step unresolved routes to portfolioChoice',
-    () async {
-      onboardingStateRepository.portfolioStepDone = false;
-
-      final route = await resolver.resolve();
-
-      expect(route, StartRoute.portfolioChoice);
-    },
-  );
 
   test('everything resolved routes home', () async {
     final route = await resolver.resolve();
@@ -240,18 +225,28 @@ void main() {
   });
 
   test(
-    'portfolio step resolved via skip (not just connect) still routes home — portfolio stays optional',
+    'a Wallet-first signup with no pet gets a default silently provisioned, no chooser screen shown',
     () async {
-      // isPortfolioStepDone() is true whether the user connected or skipped;
-      // the resolver must not distinguish between the two, or treat an empty
-      // portfolio as a reason to route back to portfolioChoice.
-      onboardingStateRepository.portfolioStepDone = true;
+      petRepository.hasPet = false;
+      mascotRepository.profileToReturn = PetProfile(name: null);
 
       final route = await resolver.resolve();
 
+      expect(petRepository.configuredSpecies, [PetSpecieEnum.DOG]);
+      expect(mascotRepository.savedNames, [kDefaultWalletPetName]);
+      // Auto-provisioning is silent — it never becomes a route of its own,
+      // resolution continues straight to the real (mentor welcome/setup/home) gates.
       expect(route, StartRoute.home);
     },
   );
+
+  test('an already-named pet is left untouched — no re-provisioning', () async {
+    mascotRepository.profileToReturn = PetProfile(name: 'Rex');
+
+    await resolver.resolve();
+
+    expect(mascotRepository.savedNames, isEmpty);
+  });
 
   test(
     'a failure reading pet/onboarding state logs the user out and routes to login',
@@ -273,7 +268,8 @@ void main() {
       final route = await resolver.resolve();
 
       expect(route, isNot(StartRoute.home));
-      expect(route, isNot(StartRoute.meetPet));
+      expect(route, isNot(StartRoute.mentorWelcome));
+      expect(route, isNot(StartRoute.quickSetup));
     },
   );
 }

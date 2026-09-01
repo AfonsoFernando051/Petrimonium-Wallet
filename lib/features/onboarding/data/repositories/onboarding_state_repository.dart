@@ -24,6 +24,33 @@ class OnboardingStateRepository {
   static const _reminderShownAtSessionKey =
       'onboarding_reminder_shown_at_session';
   static const _portfolioActivationSeenKey = 'portfolio_activation_seen';
+  static const _mentorWelcomeSeenKey = 'onboarding_mentor_welcome_seen';
+  static const _quickSetupDoneKey = 'onboarding_quick_setup_done';
+
+  /// Wallet's 2-screen mini-onboarding gate — see `MentorWelcomeScreen`.
+  /// Unlike [hasSetGoal]/[isTutorialCompleted] (still defined below for the
+  /// old 7-step flow, now unreachable from `StartRouteResolver` but kept
+  /// around undeleted per the "defer cleanup" pattern), this is the gate
+  /// Wallet's `StartRouteResolver` actually reads.
+  Future<bool> hasSeenMentorWelcome() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_mentorWelcomeSeenKey) ?? false;
+  }
+
+  Future<void> markMentorWelcomeSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_mentorWelcomeSeenKey, true);
+  }
+
+  Future<bool> hasCompletedQuickSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_quickSetupDoneKey) ?? false;
+  }
+
+  Future<void> markQuickSetupDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_quickSetupDoneKey, true);
+  }
 
   Future<bool> hasSetGoal() async {
     final prefs = await SharedPreferences.getInstance();

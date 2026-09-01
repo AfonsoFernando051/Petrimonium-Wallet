@@ -15,10 +15,8 @@ import 'package:petrimonium/core/navigation/start_route_resolver.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/auth/presentation/screens/login_screen.dart';
 import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/portfolio_choice_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/journey_ready_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/welcome_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/financial_goal_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/mentor_welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 // Build-time DSN for crash/error reporting, e.g.:
@@ -123,14 +121,10 @@ class _MyAppState extends State<MyApp> {
               switch (snapshot.data) {
                 case StartRoute.home:
                   return const DashboardScreen();
-                case StartRoute.portfolioChoice:
-                  return const PortfolioChoiceScreen();
-                case StartRoute.tutorial:
-                  return const JourneyReadyScreen();
-                case StartRoute.financialGoal:
-                  return const FinancialGoalScreen();
-                case StartRoute.meetPet:
-                  return const WelcomeScreen();
+                case StartRoute.quickSetup:
+                  return const QuickSetupScreen();
+                case StartRoute.mentorWelcome:
+                  return const MentorWelcomeScreen();
                 case StartRoute.login:
                 case null:
                   return const LoginScreen();

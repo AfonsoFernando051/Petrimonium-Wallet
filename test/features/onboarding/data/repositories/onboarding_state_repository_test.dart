@@ -10,6 +10,28 @@ void main() {
     repository = OnboardingStateRepository();
   });
 
+  group('hasSeenMentorWelcome / markMentorWelcomeSeen', () {
+    test('defaults to false', () async {
+      expect(await repository.hasSeenMentorWelcome(), isFalse);
+    });
+
+    test('becomes true after markMentorWelcomeSeen', () async {
+      await repository.markMentorWelcomeSeen();
+      expect(await repository.hasSeenMentorWelcome(), isTrue);
+    });
+  });
+
+  group('hasCompletedQuickSetup / markQuickSetupDone', () {
+    test('defaults to false', () async {
+      expect(await repository.hasCompletedQuickSetup(), isFalse);
+    });
+
+    test('becomes true after markQuickSetupDone', () async {
+      await repository.markQuickSetupDone();
+      expect(await repository.hasCompletedQuickSetup(), isTrue);
+    });
+  });
+
   group('hasSetGoal / setGoalChosen', () {
     test('defaults to false', () async {
       expect(await repository.hasSetGoal(), isFalse);

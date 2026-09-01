@@ -13,6 +13,19 @@ class AppStrings {
   static const String brandTitle = "brandTitle";
   static const String sharedAccountNotice = "sharedAccountNotice";
 
+  // Mini onboarding (2 screens): Mentor welcome card + quick setup.
+  static const String mentorWelcomeHeadline = "mentorWelcomeHeadline";
+  static const String mentorWelcomeParagraph1 = "mentorWelcomeParagraph1";
+  static const String mentorWelcomeParagraph2 = "mentorWelcomeParagraph2";
+  static const String mentorWelcomeParagraph3 = "mentorWelcomeParagraph3";
+  static const String mentorWelcomeCta = "mentorWelcomeCta";
+  static const String quickSetupTitle = "quickSetupTitle";
+  static const String quickSetupSubtitle = "quickSetupSubtitle";
+  static const String quickSetupMarketLabel = "quickSetupMarketLabel";
+  static const String quickSetupCurrencyLabel = "quickSetupCurrencyLabel";
+  static const String quickSetupFooterNote = "quickSetupFooterNote";
+  static const String quickSetupCta = "quickSetupCta";
+
   // Signup
   static const String createAccount = "createAccount";
   static const String fillDetails = "fillDetails";
