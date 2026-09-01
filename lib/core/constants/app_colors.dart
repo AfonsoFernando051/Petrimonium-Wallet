@@ -12,11 +12,13 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Space theme backgrounds — dark theme only; use context.colors for
-  // anything that must also work in Light.
-  static const Color spaceDark   = Color(0xFF0A0A1A);
-  static const Color spaceBlue   = Color(0xFF101835);
-  static const Color spacePurple = Color(0xFF1A0B2E);
+  // Petrol-green theme backgrounds — dark theme only; use context.colors for
+  // anything that must also work in Light. Deliberately not the Academy's
+  // cosmic dark: Wallet's design system replaces it to keep "learning" and
+  // "real patrimony" visually distinct at a glance.
+  static const Color spaceDark   = Color(0xFF08110E);
+  static const Color spaceBlue   = Color(0xFF0D1A16);
+  static const Color spacePurple = Color(0xFF102420); // mid petrol tone, for 3-stop gradients
 
   // Legacy compatibility
   static const Color backgroundLight  = Color(0xFF6A11CB);
@@ -31,12 +33,16 @@ class AppColors {
   static const Color white70 = Colors.white70;
   static const Color white   = Colors.white;
 
-  // Neon palette — primary brand colors
-  static const Color neonCyan   = Color(0xFF00E5FF);
-  static const Color neonPurple = Color(0xFFC5ABFF); // brightened for AA contrast
-  static const Color neonViolet = Color(0xFF8A2BE2); // replaces all inline 0xFF8A2BE2
+  // Emerald palette — primary brand colors. Replaces the Academy's
+  // cyan/violet/pink identity with Wallet's emerald ("acento primário
+  // verde-esmeralda ... substitui o roxo/magenta da Academy") — same field
+  // names as Academy's AppColors (only the literals differ) so every screen
+  // already reading these constants re-themes for free.
+  static const Color neonCyan   = Color(0xFF3FE0B0); // emerald, bright — primary accent + "cálculo" layer
+  static const Color neonPurple = Color(0xFFC5ABFF); // UNCHANGED — Mentor lilac, the one constant shared with Academy
+  static const Color neonViolet = Color(0xFF0B7A5F); // emerald, deep
   static const Color neonBlue   = Color(0xFF2979FF);
-  static const Color neonPink   = Color(0xFFFF2A85);
+  static const Color neonPink   = Color(0xFF3FE0B0); // emerald, bright
   static const Color goldenBorder = Color(0xFFFFD54F);
 
   /// The product's single strongest visual signature — progression, XP,
@@ -47,7 +53,7 @@ class AppColors {
 
   // Semantic / state colors — themed, NOT generic Material defaults
   static const Color positiveGreen = Color(0xFF00E676); // neon green
-  static const Color negativeRed   = Color(0xFFFF1744); // vivid red
+  static const Color negativeRed   = Color(0xFFFF5C7A); // soft red — never a panic/alarm red
   static const Color warningAmber  = Color(0xFFFFAB40); // alert amber
 
   // Subdued text — better contrast than Colors.white70 on dark glass
