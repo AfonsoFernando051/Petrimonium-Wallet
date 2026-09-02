@@ -9,6 +9,7 @@ class ChatMessage {
     required this.text,
     required this.timestamp,
     this.isError = false,
+    this.sources = const [],
   });
 
   final String id;
@@ -17,6 +18,13 @@ class ChatMessage {
   final DateTime timestamp;
   final bool isError;
 
+  /// Real, stable English source keys the backend reports as having fed
+  /// this specific reply (`MentorSystemPromptBuilder.walletSourcesFor`) —
+  /// empty for user messages, and for mentor replies where nothing beyond
+  /// the conversation itself was consulted. Powers the chat bubble's "Por
+  /// que estou vendo isto?" citation list — never fabricated client-side.
+  final List<String> sources;
+
   ChatMessage copyWith({String? text, bool? isError}) {
     return ChatMessage(
       id: id,
@@ -24,6 +32,7 @@ class ChatMessage {
       text: text ?? this.text,
       timestamp: timestamp,
       isError: isError ?? this.isError,
+      sources: sources,
     );
   }
 
@@ -33,6 +42,7 @@ class ChatMessage {
         'text': text,
         'timestamp': timestamp.toIso8601String(),
         'isError': isError,
+        'sources': sources,
       };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -45,6 +55,7 @@ class ChatMessage {
       text: json['text'] as String? ?? '',
       timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
       isError: json['isError'] as bool? ?? false,
+      sources: (json['sources'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
     );
   }
 }

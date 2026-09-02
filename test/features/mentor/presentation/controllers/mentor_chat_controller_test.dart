@@ -115,6 +115,29 @@ void main() {
     );
 
     test(
+      'threads the repository\'s real cited sources onto the revealed mentor message',
+      () async {
+        when(
+          () => mockRepository.sendMessage(
+            message: any(named: 'message'),
+            conversationId: any(named: 'conversationId'),
+            currentScreen: any(named: 'currentScreen'),
+          ),
+        ).thenAnswer(
+          (_) async => const MentorChatResult(
+            reply: 'Baseado na sua carteira atual.',
+            conversationId: 1,
+            sources: ['portfolio_summary', 'pet'],
+          ),
+        );
+
+        await controller.sendMessage('Como está minha carteira?');
+
+        expect(controller.messages[1].sources, ['portfolio_summary', 'pet']);
+      },
+    );
+
+    test(
       'adopts the conversationId returned by the repository on the first send',
       () async {
         when(

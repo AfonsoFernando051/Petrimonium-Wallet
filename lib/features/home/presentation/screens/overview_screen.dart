@@ -11,6 +11,7 @@ import 'package:petrimonium/features/home/presentation/widgets/mentor_insight_ca
 import 'package:petrimonium/features/home/presentation/widgets/portfolio_not_connected_card.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/investment_type_display.dart';
+import 'package:petrimonium/features/portfolio/domain/entities/wealth_change_breakdown.dart';
 import 'package:petrimonium/features/portfolio/presentation/controllers/portfolio_controller.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/holdings_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/shared/error_banner.dart';
@@ -20,8 +21,9 @@ import 'package:petrimonium/features/portfolio/presentation/widgets/shared/error
 /// total... sem uma aba 'Carteira' redundante" per the Wallet design
 /// system). Shows: a greeting, the Mentor's one interpretation for the
 /// session, total wealth (labeled as data — source/timestamp always shown),
-/// a placeholder for the valorização/aportes/rendimentos breakdown (real
-/// backend field doesn't exist yet), and holdings grouped by category.
+/// a real valorização/aportes/rendimentos breakdown for the trailing 30
+/// days (`PortfolioController.wealthChange30d`, computed client-side from
+/// real lot/dividend data), and holdings grouped by category.
 ///
 /// No own `Scaffold`/`AppBar`/background — embedded directly in
 /// `DashboardScreen`'s shared chrome.
@@ -46,6 +48,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
   void initState() {
     super.initState();
     _loadDisplayName();
+    // Cached/deduped after the first call — safe to call unconditionally so
+    // the wealth-change card's real rendimentos figure isn't stuck at 0.
+    widget.controller.loadDividendRadarIfNeeded();
   }
 
   Future<void> _loadDisplayName() async {
@@ -89,7 +94,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
             else ...[
               _WealthHeroCard(controller: controller),
               const SizedBox(height: 16),
-              const _WealthChangePlaceholderCard(),
+              _WealthChangeCard(breakdown: controller.wealthChange30d),
               const SizedBox(height: 20),
               Text(
                 Translator.translate(AppStrings.homeHoldingsSectionTitle),
@@ -199,12 +204,18 @@ class _WealthHeroCard extends StatelessWidget {
   }
 }
 
-class _WealthChangePlaceholderCard extends StatelessWidget {
-  const _WealthChangePlaceholderCard();
+class _WealthChangeCard extends StatelessWidget {
+  const _WealthChangeCard({required this.breakdown});
+
+  final WealthChangeBreakdown? breakdown;
+
+  String _signed(double value) =>
+      value >= 0 ? '+${AppFormatters.currency(value)}' : AppFormatters.currency(value);
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.colors;
+    final breakdown = this.breakdown;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -226,12 +237,59 @@ class _WealthChangePlaceholderCard extends StatelessWidget {
             label: Translator.translate(AppStrings.homeChangeCalcChipLabel),
           ),
           const SizedBox(height: 12),
-          Text(
-            Translator.translate(AppStrings.homeChangeComingSoonNote),
-            style: TextStyle(color: tokens.textSecondary, fontSize: 13, height: 1.4),
-          ),
+          if (breakdown == null)
+            Text(
+              Translator.translate(AppStrings.homeChangeNotEnoughHistoryNote),
+              style: TextStyle(color: tokens.textSecondary, fontSize: 13, height: 1.4),
+            )
+          else ...[
+            _ChangeRow(
+              label: Translator.translate(AppStrings.homeChangeValorizacaoLabel),
+              value: _signed(breakdown.valorizacao),
+              tokens: tokens,
+            ),
+            const SizedBox(height: 8),
+            _ChangeRow(
+              label: Translator.translate(AppStrings.homeChangeAportesLabel),
+              value: _signed(breakdown.aportes),
+              tokens: tokens,
+            ),
+            const SizedBox(height: 8),
+            _ChangeRow(
+              label: Translator.translate(AppStrings.homeChangeRendimentosLabel),
+              value: _signed(breakdown.rendimentos),
+              tokens: tokens,
+            ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _ChangeRow extends StatelessWidget {
+  const _ChangeRow({required this.label, required this.value, required this.tokens});
+
+  final String label;
+  final String value;
+  final AppColorTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+        Text(
+          value,
+          style: TextStyle(
+            color: tokens.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 }

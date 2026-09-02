@@ -50,7 +50,9 @@ void main() {
       expect(find.byType(HoldingsSection), findsNothing);
     });
 
-    testWidgets('shows the wealth hero, change placeholder and holdings when holdings exist', (tester) async {
+    testWidgets('shows the wealth hero, real change breakdown and holdings when holdings exist', (tester) async {
+      // Purchased well before the 30-day window, no price movement — the
+      // real breakdown is all zeros, not the old "coming soon" placeholder.
       final holdings = [lot(ticker: 'PETR4', quantity: 100, purchasePrice: 10)];
       repository.holdingsToReturn = Holding.fromLots(holdings);
       repository.summaryToReturn = statsFromLots(holdings).summary;
@@ -58,14 +60,15 @@ void main() {
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
+      await tester.pump();
 
       expect(find.byType(PortfolioNotConnectedCard), findsNothing);
       expect(find.text('Como está meu patrimônio?'), findsOneWidget);
       expect(find.text('O que mudou (últimos 30 dias)'), findsOneWidget);
-      expect(
-        find.text('Detalhamento por valorização, aportes e rendimentos — em breve.'),
-        findsOneWidget,
-      );
+      expect(find.text('Valorização'), findsOneWidget);
+      expect(find.text('Aportes'), findsOneWidget);
+      expect(find.text('Rendimentos'), findsOneWidget);
+      expect(find.text('+R\$ 0,00'), findsNWidgets(3));
       expect(find.byType(HoldingsSection), findsOneWidget);
     });
 

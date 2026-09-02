@@ -87,7 +87,7 @@ class MentorChatController extends ChangeNotifier {
         currentScreen: currentScreen,
       );
       _conversationId = result.conversationId;
-      await _revealReply(result.reply, isError: false);
+      await _revealReply(result.reply, isError: false, sources: result.sources);
     } catch (e, stackTrace) {
       // Logged rather than silently discarded — a swallowed exception here
       // means the debug console shows nothing when a request fails, which
@@ -113,7 +113,7 @@ class MentorChatController extends ChangeNotifier {
   /// Reveals [fullText] a few characters at a time so a normal (non-streamed)
   /// backend reply still reads as "typing" like the ChatGPT/Claude-style
   /// experience the product spec asks for.
-  Future<void> _revealReply(String fullText, {required bool isError}) async {
+  Future<void> _revealReply(String fullText, {required bool isError, List<String> sources = const []}) async {
     final messageId = _newId();
     _messages.add(
       ChatMessage(
@@ -122,6 +122,7 @@ class MentorChatController extends ChangeNotifier {
         text: '',
         timestamp: DateTime.now(),
         isError: isError,
+        sources: sources,
       ),
     );
     notifyListeners();

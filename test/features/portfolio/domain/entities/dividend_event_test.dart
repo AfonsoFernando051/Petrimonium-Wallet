@@ -213,5 +213,38 @@ void main() {
         expect(DividendRadar.empty.receivedInLast12Months(now: now), 0);
       });
     });
+
+    group('receivedInLastDays', () {
+      final now = DateTime(2026, 9, 1);
+
+      DividendEvent paidOn(DateTime date, double amount) => DividendEvent(
+            ticker: 'PETR4',
+            type: DividendType.DIVIDENDO,
+            rawLabel: '',
+            ratePerShare: 1,
+            dataCom: null,
+            paymentDate: date,
+            approvedOn: null,
+            userQuantity: 100,
+            estimatedGrossAmount: amount,
+            status: DividendStatus.PAID,
+          );
+
+      test('sums only history events within the trailing N days', () {
+        final radar = DividendRadar(
+          upcoming: const [],
+          history: [
+            paidOn(DateTime(2026, 8, 20), 100), // within the last 30 days
+            paidOn(DateTime(2026, 7, 1), 50), // outside the 30-day window
+          ],
+        );
+
+        expect(radar.receivedInLastDays(30, now: now), 100);
+      });
+
+      test('returns 0 for an empty radar', () {
+        expect(DividendRadar.empty.receivedInLastDays(30, now: now), 0);
+      });
+    });
   });
 }

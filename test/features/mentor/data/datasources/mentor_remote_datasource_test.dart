@@ -31,6 +31,7 @@ void main() {
               'reply': 'Hi there',
               'conversationId': 7,
               'title': 'New chat',
+              'sources': ['portfolio_summary', 'pet'],
             }),
             200,
           ),
@@ -45,6 +46,7 @@ void main() {
         expect(result.reply, 'Hi there');
         expect(result.conversationId, 7);
         expect(result.title, 'New chat');
+        expect(result.sources, ['portfolio_summary', 'pet']);
         verify(
           () => mockApiClient.post(ApiConstants.mentorChatEndpoint, {
             'message': 'hello',
@@ -54,6 +56,21 @@ void main() {
         ).called(1);
       },
     );
+
+    test('defaults sources to an empty list when the backend response omits it (Academy path)', () async {
+      when(
+        () => mockApiClient.post(any(), any(), timeout: any(named: 'timeout')),
+      ).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({'reply': 'Hi there', 'conversationId': 7, 'title': 'New chat'}),
+          200,
+        ),
+      );
+
+      final result = await dataSource.sendMessage(message: 'hello', context: const {});
+
+      expect(result.sources, isEmpty);
+    });
 
     test(
       'uses a longer timeout than the default, since it waits on an LLM reply',

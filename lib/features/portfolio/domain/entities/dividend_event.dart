@@ -92,7 +92,18 @@ class DividendRadar {
   /// bucket. [now] is only for tests; real callers use the default.
   double receivedInLast12Months({DateTime? now}) {
     final reference = now ?? DateTime.now();
-    final cutoff = DateTime(reference.year, reference.month - 11, 1);
+    return _receivedSince(DateTime(reference.year, reference.month - 11, 1));
+  }
+
+  /// Same real, already-paid-only sum as [receivedInLast12Months], over a
+  /// trailing [days]-day window instead — Home's "o que mudou (últimos 30
+  /// dias)" rendimentos row.
+  double receivedInLastDays(int days, {DateTime? now}) {
+    final reference = now ?? DateTime.now();
+    return _receivedSince(reference.subtract(Duration(days: days)));
+  }
+
+  double _receivedSince(DateTime cutoff) {
     return history.fold<double>(0, (sum, event) {
       final date = event.paymentDate ?? event.dataCom ?? event.approvedOn;
       if (date == null || date.isBefore(cutoff)) return sum;

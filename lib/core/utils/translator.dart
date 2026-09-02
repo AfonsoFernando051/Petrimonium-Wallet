@@ -83,6 +83,11 @@ class Translator {
       AppStrings.homeChangeCalcChipLabel: "CÁLCULO DETERMINÍSTICO",
       AppStrings.homeChangeComingSoonNote:
           "Detalhamento por valorização, aportes e rendimentos — em breve.",
+      AppStrings.homeChangeNotEnoughHistoryNote:
+          "Ainda não há histórico suficiente nos últimos 30 dias para esse detalhamento.",
+      AppStrings.homeChangeValorizacaoLabel: "Valorização",
+      AppStrings.homeChangeAportesLabel: "Aportes",
+      AppStrings.homeChangeRendimentosLabel: "Rendimentos",
       AppStrings.homeHoldingsSectionTitle: "Meus ativos",
       AppStrings.proventosTitle: "Proventos",
       AppStrings.proventosSubtitle: "Dividendos, JCP e rendimentos recebidos",
@@ -98,6 +103,13 @@ class Translator {
       AppStrings.mentorPreferencesGoalLabel: "Objetivo financeiro",
       AppStrings.mentorPreferencesHorizonLabel: "Horizonte de investimento",
       AppStrings.mentorPreferencesSavedSnack: "Preferências salvas",
+      AppStrings.mentorSourcesLabel: "Fontes",
+      AppStrings.mentorSourcePortfolioSummary: "Sua carteira",
+      AppStrings.mentorSourcePortfolioAllocation: "Sua alocação por categoria",
+      AppStrings.mentorSourcePet: "Seu pet",
+      AppStrings.mentorSourceClientGoal: "Seu objetivo",
+      AppStrings.mentorSourceClientHorizon: "Seu horizonte de investimento",
+      AppStrings.mentorSourceClientScreen: "A tela que você está vendo",
       AppStrings.privacyMemoryBody:
           "O Mentor usa seu objetivo e horizonte de investimento como contexto em cada resposta, e guarda suas conversas para você poder retomá-las depois. Ele nunca compartilha esses dados com a Academy nem os usa para decidir por você.",
       AppStrings.privacyMemoryConversationsButton: "Ver conversas salvas",
@@ -736,6 +748,11 @@ class Translator {
       AppStrings.homeChangeCalcChipLabel: "DETERMINISTIC CALCULATION",
       AppStrings.homeChangeComingSoonNote:
           "Breakdown by appreciation, contributions and income — coming soon.",
+      AppStrings.homeChangeNotEnoughHistoryNote:
+          "Not enough history in the last 30 days yet for this breakdown.",
+      AppStrings.homeChangeValorizacaoLabel: "Appreciation",
+      AppStrings.homeChangeAportesLabel: "Contributions",
+      AppStrings.homeChangeRendimentosLabel: "Income",
       AppStrings.homeHoldingsSectionTitle: "My assets",
       AppStrings.proventosTitle: "Income",
       AppStrings.proventosSubtitle: "Dividends, JCP and income received",
@@ -751,6 +768,13 @@ class Translator {
       AppStrings.mentorPreferencesGoalLabel: "Financial goal",
       AppStrings.mentorPreferencesHorizonLabel: "Investment horizon",
       AppStrings.mentorPreferencesSavedSnack: "Preferences saved",
+      AppStrings.mentorSourcesLabel: "Sources",
+      AppStrings.mentorSourcePortfolioSummary: "Your portfolio",
+      AppStrings.mentorSourcePortfolioAllocation: "Your allocation by category",
+      AppStrings.mentorSourcePet: "Your pet",
+      AppStrings.mentorSourceClientGoal: "Your goal",
+      AppStrings.mentorSourceClientHorizon: "Your investment horizon",
+      AppStrings.mentorSourceClientScreen: "The screen you're viewing",
       AppStrings.privacyMemoryBody:
           "The Mentor uses your goal and investment horizon as context in every reply, and keeps your conversations so you can pick them back up later. It never shares this data with the Academy or uses it to decide anything for you.",
       AppStrings.privacyMemoryConversationsButton: "View saved conversations",
@@ -1382,6 +1406,11 @@ class Translator {
       AppStrings.homeChangeCalcChipLabel: "CÁLCULO DETERMINÍSTICO",
       AppStrings.homeChangeComingSoonNote:
           "Desglose por valorización, aportes e ingresos — próximamente.",
+      AppStrings.homeChangeNotEnoughHistoryNote:
+          "Aún no hay suficiente historial en los últimos 30 días para este desglose.",
+      AppStrings.homeChangeValorizacaoLabel: "Valorización",
+      AppStrings.homeChangeAportesLabel: "Aportes",
+      AppStrings.homeChangeRendimentosLabel: "Ingresos",
       AppStrings.homeHoldingsSectionTitle: "Mis activos",
       AppStrings.proventosTitle: "Proventos",
       AppStrings.proventosSubtitle: "Dividendos, JCP e ingresos recibidos",
@@ -1397,6 +1426,13 @@ class Translator {
       AppStrings.mentorPreferencesGoalLabel: "Objetivo financiero",
       AppStrings.mentorPreferencesHorizonLabel: "Horizonte de inversión",
       AppStrings.mentorPreferencesSavedSnack: "Preferencias guardadas",
+      AppStrings.mentorSourcesLabel: "Fuentes",
+      AppStrings.mentorSourcePortfolioSummary: "Tu cartera",
+      AppStrings.mentorSourcePortfolioAllocation: "Tu asignación por categoría",
+      AppStrings.mentorSourcePet: "Tu mascota",
+      AppStrings.mentorSourceClientGoal: "Tu objetivo",
+      AppStrings.mentorSourceClientHorizon: "Tu horizonte de inversión",
+      AppStrings.mentorSourceClientScreen: "La pantalla que estás viendo",
       AppStrings.privacyMemoryBody:
           "El Mentor usa tu objetivo y horizonte de inversión como contexto en cada respuesta, y guarda tus conversaciones para que puedas retomarlas después. Nunca comparte estos datos con la Academy ni los usa para decidir por ti.",
       AppStrings.privacyMemoryConversationsButton: "Ver conversaciones guardadas",

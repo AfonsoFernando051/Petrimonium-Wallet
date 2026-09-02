@@ -14,11 +14,17 @@ class MentorChatResult {
     required this.reply,
     required this.conversationId,
     this.title,
+    this.sources = const [],
   });
 
   final String reply;
   final int conversationId;
   final String? title;
+
+  /// Real source keys the backend cited for this reply (Wallet only — see
+  /// `MentorSystemPromptBuilder.walletSourcesFor`), empty on the Academy
+  /// path or when nothing beyond the conversation was consulted.
+  final List<String> sources;
 }
 
 /// Thin HTTP layer over `/api/mentor/*`. The backend builds the real
@@ -64,6 +70,7 @@ class MentorRemoteDataSource {
       reply: data['reply'] as String,
       conversationId: data['conversationId'] as int,
       title: data['title'] as String?,
+      sources: (data['sources'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
     );
   }
 

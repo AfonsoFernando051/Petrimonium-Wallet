@@ -476,6 +476,53 @@ void main() {
     });
   });
 
+  group('wealthChange30d', () {
+    DateTime daysAgo(int days) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      return today.subtract(Duration(days: days));
+    }
+
+    test('null before any holdings are loaded', () {
+      expect(controller.wealthChange30d, isNull);
+    });
+
+    test('splits the real 30-day change into valorização/aportes/rendimentos', () async {
+      // Bought 15 days ago (inside the window): the full R$1000 cost basis
+      // counts as "aportes", and the R$200 price move since purchase counts
+      // as "valorização" — none of it existed at the window's start.
+      repository.holdingsToReturn = Holding.fromLots([
+        lot(ticker: 'PETR4', quantity: 100, purchasePrice: 10, currentPrice: 12, purchaseDate: daysAgo(15)),
+      ]);
+      repository.dividendRadarToReturn = DividendRadar(
+        upcoming: const [],
+        history: [
+          DividendEvent(
+            ticker: 'PETR4',
+            type: DividendType.DIVIDENDO,
+            rawLabel: '',
+            ratePerShare: 0.5,
+            dataCom: null,
+            paymentDate: daysAgo(10),
+            approvedOn: null,
+            userQuantity: 100,
+            estimatedGrossAmount: 50,
+            status: DividendStatus.PAID,
+          ),
+        ],
+      );
+      await controller.loadAll();
+      await controller.loadDividendRadarIfNeeded();
+
+      final breakdown = controller.wealthChange30d;
+
+      expect(breakdown, isNotNull);
+      expect(breakdown!.aportes, 1000);
+      expect(breakdown.valorizacao, 200);
+      expect(breakdown.rendimentos, 50);
+    });
+  });
+
   group('loadAll — first investment', () {
     test('does not fire on a cold-start load, even if the portfolio is already non-empty', () async {
       final events = <AppEvent>[];

@@ -35,6 +35,10 @@ class AppStrings {
   static const String homeChangeSectionTitle = "homeChangeSectionTitle";
   static const String homeChangeCalcChipLabel = "homeChangeCalcChipLabel";
   static const String homeChangeComingSoonNote = "homeChangeComingSoonNote";
+  static const String homeChangeNotEnoughHistoryNote = "homeChangeNotEnoughHistoryNote";
+  static const String homeChangeValorizacaoLabel = "homeChangeValorizacaoLabel";
+  static const String homeChangeAportesLabel = "homeChangeAportesLabel";
+  static const String homeChangeRendimentosLabel = "homeChangeRendimentosLabel";
   static const String homeHoldingsSectionTitle = "homeHoldingsSectionTitle";
 
   // Proventos tab + notification popover.
@@ -53,6 +57,15 @@ class AppStrings {
   static const String mentorPreferencesGoalLabel = "mentorPreferencesGoalLabel";
   static const String mentorPreferencesHorizonLabel = "mentorPreferencesHorizonLabel";
   static const String mentorPreferencesSavedSnack = "mentorPreferencesSavedSnack";
+
+  // Mentor chat — per-reply source citations ("Por que estou vendo isto?").
+  static const String mentorSourcesLabel = "mentorSourcesLabel";
+  static const String mentorSourcePortfolioSummary = "mentorSourcePortfolioSummary";
+  static const String mentorSourcePortfolioAllocation = "mentorSourcePortfolioAllocation";
+  static const String mentorSourcePet = "mentorSourcePet";
+  static const String mentorSourceClientGoal = "mentorSourceClientGoal";
+  static const String mentorSourceClientHorizon = "mentorSourceClientHorizon";
+  static const String mentorSourceClientScreen = "mentorSourceClientScreen";
   static const String privacyMemoryBody = "privacyMemoryBody";
   static const String privacyMemoryConversationsButton = "privacyMemoryConversationsButton";
   static const String quickSetupSettingsSubtitle = "quickSetupSettingsSubtitle";

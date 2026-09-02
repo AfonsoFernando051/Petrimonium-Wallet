@@ -14,6 +14,17 @@ void main() {
       expect(message.isError, isFalse);
     });
 
+    test('defaults sources to an empty list', () {
+      final message = ChatMessage(
+        id: '1',
+        role: ChatRole.user,
+        text: 'Hello',
+        timestamp: DateTime(2024, 1, 1),
+      );
+
+      expect(message.sources, isEmpty);
+    });
+
     group('copyWith', () {
       test('overrides text and isError while keeping id/role/timestamp', () {
         final timestamp = DateTime(2024, 1, 1);
@@ -30,7 +41,14 @@ void main() {
 
       test('with no args keeps every field unchanged', () {
         final timestamp = DateTime(2024, 1, 1);
-        final original = ChatMessage(id: '1', role: ChatRole.user, text: 'text', timestamp: timestamp, isError: true);
+        final original = ChatMessage(
+          id: '1',
+          role: ChatRole.user,
+          text: 'text',
+          timestamp: timestamp,
+          isError: true,
+          sources: const ['pet'],
+        );
 
         final copy = original.copyWith();
 
@@ -39,6 +57,21 @@ void main() {
         expect(copy.text, original.text);
         expect(copy.timestamp, original.timestamp);
         expect(copy.isError, original.isError);
+        expect(copy.sources, original.sources);
+      });
+
+      test('preserves sources across a text-only update (typewriter reveal)', () {
+        final original = ChatMessage(
+          id: '1',
+          role: ChatRole.mentor,
+          text: '',
+          timestamp: DateTime(2024, 1, 1),
+          sources: const ['portfolio_summary'],
+        );
+
+        final revealed = original.copyWith(text: 'Baseado na sua carteira.');
+
+        expect(revealed.sources, ['portfolio_summary']);
       });
     });
 
@@ -51,6 +84,7 @@ void main() {
           text: 'Invista com sabedoria.',
           timestamp: timestamp,
           isError: true,
+          sources: const ['portfolio_summary', 'pet'],
         );
 
         final json = original.toJson();
@@ -61,6 +95,18 @@ void main() {
         expect(decoded.text, original.text);
         expect(decoded.timestamp, original.timestamp);
         expect(decoded.isError, original.isError);
+        expect(decoded.sources, original.sources);
+      });
+
+      test('fromJson defaults sources to an empty list when missing', () {
+        final decoded = ChatMessage.fromJson({
+          'id': '1',
+          'role': 'mentor',
+          'text': 'hi',
+          'timestamp': DateTime(2024, 1, 1).toIso8601String(),
+        });
+
+        expect(decoded.sources, isEmpty);
       });
 
       test('fromJson defaults role to mentor when the value is unrecognized', () {

@@ -21,6 +21,7 @@ import 'package:petrimonium/features/portfolio/domain/entities/passive_income_es
 import 'package:petrimonium/features/portfolio/domain/entities/portfolio_health.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/portfolio_stats.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/portfolio_summary.dart';
+import 'package:petrimonium/features/portfolio/domain/entities/wealth_change_breakdown.dart';
 import 'package:petrimonium/features/portfolio/domain/enums/history_range.dart';
 import 'package:petrimonium/features/portfolio/domain/services/achievement_catalog.dart';
 import 'package:petrimonium/features/portfolio/domain/services/mission_display_catalog.dart';
@@ -147,6 +148,32 @@ class PortfolioController extends ChangeNotifier {
   PassiveIncomeEstimate get passiveIncome => PassiveIncomeEstimator.estimate(stats);
 
   List<InvestmentLot> get _allLots => holdings.expand((h) => h.lots).toList();
+
+  /// Home's "o que mudou (últimos 30 dias)" breakdown — real, derived from
+  /// the same lot data behind the Wealth Evolution chart plus the real
+  /// `DividendRadar` history (call [loadDividendRadarIfNeeded] so the
+  /// rendimentos figure isn't stuck at 0 while it's still unfetched). `null`
+  /// with no holdings, or with fewer than two real history samples to diff
+  /// (nothing to report yet) — shown as an honest empty state, never a
+  /// fabricated zero.
+  WealthChangeBreakdown? get wealthChange30d {
+    final lots = _allLots;
+    if (lots.isEmpty) return null;
+
+    final points = WealthHistoryCalculator.compute(lots, HistoryRange.d30);
+    if (points.length < 2) return null;
+
+    final first = points.first;
+    final last = points.last;
+    final totalChange = last.portfolioValue - first.portfolioValue;
+    final aportes = last.investedCapital - first.investedCapital;
+
+    return WealthChangeBreakdown(
+      valorizacao: totalChange - aportes,
+      aportes: aportes,
+      rendimentos: dividendRadar.receivedInLastDays(30),
+    );
+  }
 
   Future<void> loadAll() async {
     isLoading = true;
