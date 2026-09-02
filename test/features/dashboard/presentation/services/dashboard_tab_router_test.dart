@@ -34,16 +34,4 @@ void main() {
       expect(DashboardTabRouter.showsHoldingsCount(DashboardTabRouter.mentorTab), isFalse);
     });
   });
-
-  group('DashboardFormatters.notificationBadgeLabel', () {
-    test('renders the exact count at or below 9', () {
-      expect(DashboardFormatters.notificationBadgeLabel(0), '0');
-      expect(DashboardFormatters.notificationBadgeLabel(9), '9');
-    });
-
-    test('caps at "9+" above 9', () {
-      expect(DashboardFormatters.notificationBadgeLabel(10), '9+');
-      expect(DashboardFormatters.notificationBadgeLabel(123), '9+');
-    });
-  });
 }

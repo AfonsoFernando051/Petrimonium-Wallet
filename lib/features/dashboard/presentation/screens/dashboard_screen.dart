@@ -6,7 +6,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_color_tokens.dart';
 import '../../../../core/theme/app_motion.dart';
-import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/translator.dart';
 import '../../../../core/widgets/confirm_logout_dialog.dart';
@@ -339,27 +338,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         if (upcomingCount > 0)
           Positioned(
-            right: 6,
-            top: 6,
+            right: 8,
+            top: 8,
             child: IgnorePointer(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(
                   color: context.colors.error,
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  shape: BoxShape.circle,
                   border: Border.all(
                     color: context.colors.backgroundSecondary,
                     width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  DashboardFormatters.notificationBadgeLabel(upcomingCount),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

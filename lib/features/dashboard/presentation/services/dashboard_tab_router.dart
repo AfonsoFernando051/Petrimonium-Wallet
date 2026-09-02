@@ -32,14 +32,3 @@ class DashboardTabRouter {
   /// now shows holdings directly (it absorbed Carteira), so it qualifies too.
   static bool showsHoldingsCount(int tabIndex) => tabIndex == homeTab || tabIndex == passiveIncomeTab;
 }
-
-/// Small display-formatting helpers for the Dashboard chrome — kept
-/// alongside [DashboardTabRouter] rather than inline in the screen for the
-/// same "no domain layer to hold this" reason.
-class DashboardFormatters {
-  DashboardFormatters._();
-
-  /// Notification-bell badge count: caps the visible digits at "9+" instead
-  /// of letting a busy user's badge grow unbounded and break the pill layout.
-  static String notificationBadgeLabel(int count) => count > 9 ? '9+' : '$count';
-}
