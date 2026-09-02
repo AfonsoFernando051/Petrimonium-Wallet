@@ -80,7 +80,7 @@ void main() {
   }
 
   group('ProfileScreen', () {
-    testWidgets('renders the identity subtitle and the 4 settings rows', (tester) async {
+    testWidgets('renders the identity subtitle and exactly the 3 mockup rows', (tester) async {
       await tester.pumpWidget(buildTestable());
       // CosmicBackground has repeating AnimationControllers — never
       // pumpAndSettle here.
@@ -91,7 +91,7 @@ void main() {
       expect(find.text('Preferências do Mentor'), findsOneWidget);
       expect(find.text('Privacidade e memória'), findsOneWidget);
       expect(find.text('Moeda-base e mercado'), findsOneWidget);
-      expect(find.text('Configurações do app'), findsOneWidget);
+      expect(find.text('Configurações do app'), findsNothing);
     });
 
     testWidgets('back button pops the screen', (tester) async {
@@ -130,12 +130,12 @@ void main() {
       expect(find.byType(ProfileScreen), findsNothing);
     });
 
-    testWidgets('tapping "Configurações do app" navigates to SettingsScreen', (tester) async {
+    testWidgets('tapping the AppBar gear icon navigates to SettingsScreen', (tester) async {
       await tester.pumpWidget(buildTestable());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      await tester.tap(find.text('Configurações do app'));
+      await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 

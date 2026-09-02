@@ -16,15 +16,16 @@ import 'package:petrimonium/features/profile/presentation/screens/privacy_and_me
 import 'package:petrimonium/features/settings/presentation/screens/settings_screen.dart';
 
 /// The "Perfil" experience — reached via the AppBar's config/gear icon.
-/// Identity (name + "same account as the Academy") plus the 3 real settings
-/// the Wallet design system calls for: Mentor preferences (goal/horizon —
-/// the same context `MentorChatRepository` already sends with every
-/// message), Privacidade e memória (links to the real conversation-history
-/// screen), and Moeda-base e mercado (the quick-setup pickers, reused in
-/// settings mode). "Configurações do app" (language) is a 4th row not in
-/// the mockup — language switching needs to stay reachable from somewhere,
-/// and this screen is now the only path here since `DashboardScreen`'s gear
-/// icon no longer opens Settings directly.
+/// Identity (name + "same account as the Academy") plus exactly the 3 rows
+/// the Notion mockup shows: Mentor preferences (goal/horizon — the same
+/// context `MentorChatRepository` already sends with every message),
+/// Privacidade e memória (links to the real conversation-history screen),
+/// and Moeda-base e mercado (the quick-setup pickers, reused in settings
+/// mode). The legacy `SettingsScreen` (language, appearance, notification
+/// toggles, pet rename, logout — none of it in the mockup, all of it real
+/// and still needed) stays reachable via a small gear icon in this screen's
+/// AppBar instead of a 4th menu row, so the body matches the mockup's 3
+/// rows exactly.
 ///
 /// Keeps the same [PetCompanionController] instance `DashboardScreen` owns
 /// (not a new one) so the companion's message/cooldown state stays
@@ -86,6 +87,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (Navigator.canPop(context)) Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings_outlined, color: tokens.textSecondary),
+            tooltip: Translator.translate(AppStrings.profileAppSettingsLabel),
+            onPressed: () => Navigator.of(context).push(fadeRoute(const SettingsScreen())),
+          ),
+        ],
       ),
       body: CosmicBackground(
         child: Stack(
@@ -113,10 +121,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const QuickSetupScreen(isSettingsMode: true)),
                     ),
-                  ),
-                  _ProfileMenuRow(
-                    label: Translator.translate(AppStrings.profileAppSettingsLabel),
-                    onTap: () => Navigator.of(context).push(fadeRoute(const SettingsScreen())),
                   ),
                 ],
               ),
