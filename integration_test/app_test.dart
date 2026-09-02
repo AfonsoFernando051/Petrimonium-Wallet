@@ -20,7 +20,8 @@ import 'package:petrimonium/features/auth/presentation/widgets/signup_form.dart'
 import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:petrimonium/features/mentor/data/repositories/mentor_chat_repository.dart';
 import 'package:petrimonium/features/mentor/presentation/screens/mentor_screen.dart';
-import 'package:petrimonium/features/onboarding/presentation/screens/portfolio_choice_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/mentor_welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:petrimonium/features/onboarding/data/models/onboarding_status_model.dart';
 import 'package:petrimonium/features/onboarding/data/models/question_model.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_repository.dart';
@@ -112,6 +113,12 @@ void main() {
     when(
       () => mockAuthRepository.register(any(), any(), any()),
     ).thenAnswer((_) async {});
+    // Home's greeting (`OverviewScreen._loadDisplayName`) reads this on
+    // every mount — pre-existing gap, unrelated to onboarding, but every
+    // flow in this file eventually reaches the dashboard.
+    when(
+      () => mockAuthRepository.getSavedEmail(),
+    ).thenAnswer((_) async => 'investor@test.com');
 
     mockOnboardingRepository = MockOnboardingRepository();
     DI.onboardingRepository = mockOnboardingRepository;
@@ -169,6 +176,22 @@ void main() {
 
     mockOnboardingStateRepository = MockOnboardingStateRepository();
     DI.onboardingStateRepository = mockOnboardingStateRepository;
+    // The 2-screen mini-onboarding gate `StartRouteResolver` actually reads
+    // (see its class doc) — defaults to "already onboarded" so a fresh
+    // login/registration lands straight on the dashboard unless a specific
+    // test overrides this to exercise the mentor-welcome/quick-setup path.
+    when(
+      () => mockOnboardingStateRepository.hasSeenMentorWelcome(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockOnboardingStateRepository.hasCompletedQuickSetup(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockOnboardingStateRepository.markMentorWelcomeSeen(),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockOnboardingStateRepository.markQuickSetupDone(),
+    ).thenAnswer((_) async {});
     when(
       () => mockOnboardingStateRepository.hasSetGoal(),
     ).thenAnswer((_) async => true);
@@ -275,13 +298,14 @@ void main() {
   });
 
   testWidgets(
-    'registration reaches the learn-first onboarding before any asset entry',
+    'registration reaches the mentor welcome screen before quick setup',
     (tester) async {
-      // This account has already completed the earlier onboarding steps
-      // (pet, goal and tutorial). Its first post-registration route must be
-      // the learn-first guidance, rather than a forced asset-entry screen.
+      // A brand-new account has seen neither of Wallet's 2 mini-onboarding
+      // screens yet — its first post-registration route must be the mentor
+      // welcome screen (`StartRouteResolver`'s own gating order), not
+      // straight to the dashboard.
       when(
-        () => mockOnboardingStateRepository.isPortfolioStepDone(),
+        () => mockOnboardingStateRepository.hasSeenMentorWelcome(),
       ).thenAnswer((_) async => false);
 
       await tester.pumpWidget(const MyApp());
@@ -313,41 +337,22 @@ void main() {
         await tester.pump();
       }
 
-      expect(find.byType(PortfolioChoiceScreen), findsOneWidget);
+      expect(find.byType(MentorWelcomeScreen), findsOneWidget);
+      expect(find.byType(QuickSetupScreen), findsNothing);
       expect(find.byType(DashboardScreen), findsNothing);
-      expect(
-        find.text(
-          Translator.translate(AppStrings.portfolioGuidanceContinueButton),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.text(Translator.translate(AppStrings.addManuallyButton)),
-        findsNothing,
-      );
-      expect(
-        find.text(Translator.translate(AppStrings.importPortfolioButton)),
-        findsNothing,
-      );
 
-      // Continue the learn-first onboarding without ever asking the user to
-      // register an asset — the portfolio stays optional and unconnected.
-      await tester.tap(
-        find.text(
-          Translator.translate(AppStrings.portfolioGuidanceContinueButton),
-        ),
-      );
+      // Continuing marks the mentor welcome step seen and moves to quick
+      // setup (market/base currency) — the next and last onboarding gate.
+      await tester.tap(find.text(Translator.translate(AppStrings.mentorWelcomeCta)));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       for (var i = 0; i < 6; i++) {
         await tester.pump();
       }
 
-      verify(
-        () => mockOnboardingStateRepository.markPortfolioSkipped(),
-      ).called(1);
-      expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.byType(PortfolioChoiceScreen), findsNothing);
+      verify(() => mockOnboardingStateRepository.markMentorWelcomeSeen()).called(1);
+      expect(find.byType(QuickSetupScreen), findsOneWidget);
+      expect(find.byType(MentorWelcomeScreen), findsNothing);
     },
   );
 
