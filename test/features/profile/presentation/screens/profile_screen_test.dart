@@ -11,6 +11,9 @@ import 'package:petrimonium/features/pet/domain/enums/pet_evolution_stage.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/presentation/companion/pet_companion_controller.dart';
 import 'package:petrimonium/features/pet/presentation/mascot/controllers/mascot_controller.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
+import 'package:petrimonium/features/profile/presentation/screens/mentor_preferences_screen.dart';
+import 'package:petrimonium/features/profile/presentation/screens/privacy_and_memory_screen.dart';
 import 'package:petrimonium/features/profile/presentation/screens/profile_screen.dart';
 import 'package:petrimonium/features/settings/presentation/screens/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,15 +80,18 @@ void main() {
   }
 
   group('ProfileScreen', () {
-    testWidgets('renders the placeholder profile card', (tester) async {
+    testWidgets('renders the identity subtitle and the 4 settings rows', (tester) async {
       await tester.pumpWidget(buildTestable());
       // CosmicBackground has repeating AnimationControllers — never
       // pumpAndSettle here.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Perfil do Comandante'), findsOneWidget);
-      expect(find.byIcon(Icons.manage_accounts), findsOneWidget);
+      expect(find.text('Petrimonium · Academy + Wallet'), findsOneWidget);
+      expect(find.text('Preferências do Mentor'), findsOneWidget);
+      expect(find.text('Privacidade e memória'), findsOneWidget);
+      expect(find.text('Moeda-base e mercado'), findsOneWidget);
+      expect(find.text('Configurações do app'), findsOneWidget);
     });
 
     testWidgets('back button pops the screen', (tester) async {
@@ -124,16 +130,55 @@ void main() {
       expect(find.byType(ProfileScreen), findsNothing);
     });
 
-    testWidgets('tapping the settings button navigates to SettingsScreen', (tester) async {
+    testWidgets('tapping "Configurações do app" navigates to SettingsScreen', (tester) async {
       await tester.pumpWidget(buildTestable());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      await tester.tap(find.text('Configurações'));
+      await tester.tap(find.text('Configurações do app'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.byType(SettingsScreen), findsOneWidget);
+    });
+
+    testWidgets('tapping "Preferências do Mentor" navigates to MentorPreferencesScreen', (tester) async {
+      await tester.pumpWidget(buildTestable());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Preferências do Mentor'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(MentorPreferencesScreen), findsOneWidget);
+    });
+
+    testWidgets('tapping "Privacidade e memória" navigates to PrivacyAndMemoryScreen', (tester) async {
+      await tester.pumpWidget(buildTestable());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Privacidade e memória'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(PrivacyAndMemoryScreen), findsOneWidget);
+    });
+
+    testWidgets('tapping "Moeda-base e mercado" navigates to QuickSetupScreen in settings mode', (tester) async {
+      await tester.pumpWidget(buildTestable());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Moeda-base e mercado'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final quickSetup = tester.widget<QuickSetupScreen>(find.byType(QuickSetupScreen));
+      expect(quickSetup.isSettingsMode, isTrue);
+      // Settings mode has no onboarding progress dots and its own "Salvar" CTA.
+      expect(find.text('Salvar'), findsOneWidget);
     });
   });
 }

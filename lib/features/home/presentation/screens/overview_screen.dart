@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
+import 'package:petrimonium/core/utils/display_name.dart';
 import 'package:petrimonium/core/utils/formatters.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/app_loading_indicator.dart';
@@ -47,18 +48,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
     _loadDisplayName();
   }
 
-  // There is no user display-name field anywhere yet (backend or client) —
-  // only email. Derived from it as a graceful, honest stand-in rather than
-  // fabricated; the real fix is a backend profile-name field.
   Future<void> _loadDisplayName() async {
     final email = await DI.authRepository.getSavedEmail();
-    if (!mounted || email == null || email.isEmpty) return;
-    final localPart = email.split('@').first;
-    final firstToken = localPart.split(RegExp(r'[._-]')).first;
-    if (firstToken.isEmpty) return;
-    setState(() {
-      _displayName = firstToken[0].toUpperCase() + firstToken.substring(1);
-    });
+    final name = deriveDisplayNameFromEmail(email);
+    if (!mounted || name == null) return;
+    setState(() => _displayName = name);
   }
 
   @override

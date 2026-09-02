@@ -44,6 +44,21 @@ class AppStrings {
   static const String proventosNotificationsTitle = "proventosNotificationsTitle";
   static const String proventosNotificationsFooter = "proventosNotificationsFooter";
 
+  // Perfil + its 3 settings sub-screens.
+  static const String profileIdentitySubtitle = "profileIdentitySubtitle";
+  static const String profileMentorPreferencesLabel = "profileMentorPreferencesLabel";
+  static const String profilePrivacyMemoryLabel = "profilePrivacyMemoryLabel";
+  static const String profileCurrencyMarketLabel = "profileCurrencyMarketLabel";
+  static const String profileAppSettingsLabel = "profileAppSettingsLabel";
+  static const String mentorPreferencesGoalLabel = "mentorPreferencesGoalLabel";
+  static const String mentorPreferencesHorizonLabel = "mentorPreferencesHorizonLabel";
+  static const String mentorPreferencesSavedSnack = "mentorPreferencesSavedSnack";
+  static const String privacyMemoryBody = "privacyMemoryBody";
+  static const String privacyMemoryConversationsButton = "privacyMemoryConversationsButton";
+  static const String quickSetupSettingsSubtitle = "quickSetupSettingsSubtitle";
+  static const String quickSetupSaveCta = "quickSetupSaveCta";
+  static const String quickSetupSavedSnack = "quickSetupSavedSnack";
+
   // Signup
   static const String createAccount = "createAccount";
   static const String fillDetails = "fillDetails";

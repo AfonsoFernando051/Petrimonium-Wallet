@@ -20,9 +20,8 @@ import 'package:petrimonium/core/theme/background_presets.dart';
 /// of thumb: the more cognitively demanding the screen, the quieter the
 /// preset (`immersive` on Home → `focus` on a lesson/quiz).
 ///
-/// [darken]/[starCount] remain as optional escape-hatch overrides for
-/// screens with a bespoke mood (e.g. Login) that isn't one of the named
-/// intensities.
+/// [darken]/[starCount] remain as optional escape-hatch overrides for a
+/// screen with a bespoke mood that isn't one of the named intensities.
 class CosmicBackground extends StatefulWidget {
   const CosmicBackground({
     super.key,
@@ -49,11 +48,11 @@ class CosmicBackground extends StatefulWidget {
   final ImageErrorWidgetBuilder? errorBuilder;
 
   /// When true, Light theme reuses [assetPath] (with a lightened, white-wash
-  /// treatment) instead of the generic abstract aurora — for screens like
-  /// Login where the artwork itself (not just ambient color) is the point.
-  /// Defaults to false: most `CosmicBackground` call sites use the generic
-  /// dark-space `bg_nebula.png`, which reads as heavy even lightened, so
-  /// they keep the abstract aurora treatment instead.
+  /// treatment) instead of the generic abstract aurora — for a screen where
+  /// the artwork itself (not just ambient color) is the point. Defaults to
+  /// false: most `CosmicBackground` call sites use the generic dark-space
+  /// `bg_nebula.png`, which reads as heavy even lightened, so they keep the
+  /// abstract aurora treatment instead.
   final bool showArtworkInLightMode;
 
   @override
