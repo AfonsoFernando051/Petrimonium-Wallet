@@ -66,6 +66,7 @@ class AppStrings {
   static const String mentorSourceClientGoal = "mentorSourceClientGoal";
   static const String mentorSourceClientHorizon = "mentorSourceClientHorizon";
   static const String mentorSourceClientScreen = "mentorSourceClientScreen";
+  static const String mentorInterpretationLabel = "mentorInterpretationLabel";
   static const String privacyMemoryBody = "privacyMemoryBody";
   static const String privacyMemoryConversationsButton = "privacyMemoryConversationsButton";
   static const String quickSetupSettingsSubtitle = "quickSetupSettingsSubtitle";

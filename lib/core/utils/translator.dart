@@ -110,6 +110,7 @@ class Translator {
       AppStrings.mentorSourceClientGoal: "Seu objetivo",
       AppStrings.mentorSourceClientHorizon: "Seu horizonte de investimento",
       AppStrings.mentorSourceClientScreen: "A tela que você está vendo",
+      AppStrings.mentorInterpretationLabel: "MENTOR · INTERPRETAÇÃO",
       AppStrings.privacyMemoryBody:
           "O Mentor usa seu objetivo e horizonte de investimento como contexto em cada resposta, e guarda suas conversas para você poder retomá-las depois. Ele nunca compartilha esses dados com a Academy nem os usa para decidir por você.",
       AppStrings.privacyMemoryConversationsButton: "Ver conversas salvas",
@@ -775,6 +776,7 @@ class Translator {
       AppStrings.mentorSourceClientGoal: "Your goal",
       AppStrings.mentorSourceClientHorizon: "Your investment horizon",
       AppStrings.mentorSourceClientScreen: "The screen you're viewing",
+      AppStrings.mentorInterpretationLabel: "MENTOR · INTERPRETATION",
       AppStrings.privacyMemoryBody:
           "The Mentor uses your goal and investment horizon as context in every reply, and keeps your conversations so you can pick them back up later. It never shares this data with the Academy or uses it to decide anything for you.",
       AppStrings.privacyMemoryConversationsButton: "View saved conversations",
@@ -1433,6 +1435,7 @@ class Translator {
       AppStrings.mentorSourceClientGoal: "Tu objetivo",
       AppStrings.mentorSourceClientHorizon: "Tu horizonte de inversión",
       AppStrings.mentorSourceClientScreen: "La pantalla que estás viendo",
+      AppStrings.mentorInterpretationLabel: "MENTOR · INTERPRETACIÓN",
       AppStrings.privacyMemoryBody:
           "El Mentor usa tu objetivo y horizonte de inversión como contexto en cada respuesta, y guarda tus conversaciones para que puedas retomarlas después. Nunca comparte estos datos con la Academy ni los usa para decidir por ti.",
       AppStrings.privacyMemoryConversationsButton: "Ver conversaciones guardadas",

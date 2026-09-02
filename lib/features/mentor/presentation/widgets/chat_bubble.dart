@@ -5,7 +5,9 @@ import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/glass_card.dart';
+import 'package:petrimonium/core/widgets/layer_chip.dart';
 import 'package:petrimonium/features/mentor/domain/entities/chat_message.dart';
+import 'package:petrimonium/features/mentor/domain/services/wallet_mentor_reply_layers.dart';
 
 /// Maps a real source key from `MentorSystemPromptBuilder.walletSourcesFor`
 /// to its translated label — falls back to the raw key for a source added
@@ -23,14 +25,23 @@ String _sourceLabel(String key) {
   return stringKey == null ? key : Translator.translate(stringKey);
 }
 
+String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
 /// A single chat bubble: user messages are a solid neon-gradient pill
 /// (right-aligned, plain text), mentor replies are a `GlassCard` with
 /// markdown rendering (left-aligned) — mirrors this app's existing split
-/// between player-action chrome and system/glass surfaces. A mentor reply
-/// with real cited [ChatMessage.sources] gets a "Por que estou vendo isto?"
-/// toggle revealing them — the Wallet design system's guardrail that every
-/// Mentor interpretation cites its real RAG sources, applied per-message
-/// rather than only on Home's summary card.
+/// between player-action chrome and system/glass surfaces.
+///
+/// A reply that touches real portfolio data gets broken into its real
+/// [WalletMentorReplyLayers] — a DADO chip (real fact, timestamped with
+/// when this message arrived), a CÁLCULO DETERMINÍSTICO chip (a derived
+/// number), and/or a MENTOR · INTERPRETAÇÃO chip (the Mentor's own read) —
+/// per the Wallet design system's "camadas dado/cálculo/interpretação"
+/// guardrail applied inline, not just as a trailing citation. A reply with
+/// real cited [ChatMessage.sources] additionally gets a "Por que estou
+/// vendo isto?" toggle revealing which real signals drove it — a separate,
+/// complementary guardrail (why this reply exists at all, vs. what each
+/// part of it is).
 class ChatBubble extends StatefulWidget {
   const ChatBubble({super.key, required this.message});
 
@@ -87,6 +98,8 @@ class _ChatBubbleState extends State<ChatBubble> {
         ? AppColors.warningAmber.withValues(alpha: 0.5)
         : AppColors.neonCyan.withValues(alpha: 0.35);
 
+    final layers = message.isError ? null : WalletMentorReplyLayers.tryParse(message.text);
+
     return GlassCard(
       borderColor: borderColor,
       borderRadius: 18,
@@ -98,31 +111,10 @@ class _ChatBubbleState extends State<ChatBubble> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                MarkdownBody(
-                  data: message.text,
-                  selectable: true,
-                  shrinkWrap: true,
-                  styleSheet: MarkdownStyleSheet(
-                    p: TextStyle(color: tokens.textPrimary, fontSize: 14, height: 1.4),
-                    strong: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold),
-                    em: TextStyle(color: tokens.textSecondary, fontStyle: FontStyle.italic),
-                    listBullet: const TextStyle(color: AppColors.neonCyan, fontSize: 14),
-                    h1: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
-                    h2: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
-                    code: TextStyle(
-                      color: AppColors.neonCyan,
-                      fontFamily: 'monospace',
-                      backgroundColor: tokens.backgroundSecondary.withValues(alpha: 0.5),
-                    ),
-                    blockquoteDecoration: BoxDecoration(
-                      color: tokens.backgroundSecondary.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    tableBorder: TableBorder.all(color: tokens.border),
-                    tableHead: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold),
-                    tableBody: TextStyle(color: tokens.textSecondary),
-                  ),
-                ),
+                if (layers == null)
+                  _markdown(context, message.text)
+                else
+                  _buildLayers(context, layers, message.timestamp),
                 if (message.sources.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   InkWell(
@@ -170,6 +162,77 @@ class _ChatBubbleState extends State<ChatBubble> {
                 ],
               ],
             ),
+    );
+  }
+
+  Widget _buildLayers(BuildContext context, WalletMentorReplyLayers layers, DateTime timestamp) {
+    final tokens = context.colors;
+    final time = '${_twoDigits(timestamp.hour)}:${_twoDigits(timestamp.minute)}';
+    final date = '${_twoDigits(timestamp.day)}/${_twoDigits(timestamp.month)}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (layers.data != null) ...[
+          LayerChip(
+            layer: DataLayer.data,
+            label: '${Translator.translate(AppStrings.homeWealthDataChipLabel)} · B3, $date $time',
+          ),
+          const SizedBox(height: 8),
+          _markdown(context, layers.data!),
+        ],
+        if (layers.calculation != null) ...[
+          if (layers.data != null) const SizedBox(height: 14),
+          LayerChip(
+            layer: DataLayer.calculation,
+            label: Translator.translate(AppStrings.homeChangeCalcChipLabel),
+          ),
+          const SizedBox(height: 8),
+          _markdown(context, layers.calculation!),
+        ],
+        if (layers.interpretation != null) ...[
+          if (layers.data != null || layers.calculation != null) const SizedBox(height: 14),
+          LayerChip(
+            layer: DataLayer.mentor,
+            label: Translator.translate(AppStrings.mentorInterpretationLabel),
+          ),
+          const SizedBox(height: 8),
+          DefaultTextStyle.merge(
+            style: TextStyle(color: tokens.textSecondary, fontStyle: FontStyle.italic),
+            child: _markdown(context, layers.interpretation!),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _markdown(BuildContext context, String data) {
+    final tokens = context.colors;
+    return MarkdownBody(
+      data: data,
+      selectable: true,
+      shrinkWrap: true,
+      styleSheet: MarkdownStyleSheet(
+        p: TextStyle(color: tokens.textPrimary, fontSize: 14, height: 1.4),
+        strong: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold),
+        em: TextStyle(color: tokens.textSecondary, fontStyle: FontStyle.italic),
+        listBullet: const TextStyle(color: AppColors.neonCyan, fontSize: 14),
+        h1: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
+        h2: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+        code: TextStyle(
+          color: AppColors.neonCyan,
+          fontFamily: 'monospace',
+          backgroundColor: tokens.backgroundSecondary.withValues(alpha: 0.5),
+        ),
+        blockquoteDecoration: BoxDecoration(
+          color: tokens.backgroundSecondary.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        tableBorder: TableBorder.all(color: tokens.border),
+        tableHead: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold),
+        tableBody: TextStyle(color: tokens.textSecondary),
+      ),
     );
   }
 }

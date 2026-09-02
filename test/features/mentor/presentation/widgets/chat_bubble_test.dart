@@ -129,5 +129,56 @@ void main() {
 
       expect(find.text('some_future_source'), findsOneWidget);
     });
+
+    testWidgets('a structured reply renders each real layer under its own chip', (tester) async {
+      final message = ChatMessage(
+        id: '8',
+        role: ChatRole.mentor,
+        text: '[[DATA]]\nSuas ações e FIIs desvalorizaram no período.\n'
+            r'[[CALCULATION]]' '\n- R\$ 812,40 (-1,7%) no mês\n'
+            '[[INTERPRETATION]]\nIsso é normal em mercados voláteis.',
+        timestamp: DateTime(2024, 3, 15, 9, 41),
+      );
+
+      await tester.pumpWidget(buildTestableWidget(message));
+
+      expect(find.textContaining('DADO · B3, 15/03 09:41'), findsOneWidget);
+      expect(find.text('Suas ações e FIIs desvalorizaram no período.'), findsOneWidget);
+      expect(find.text('CÁLCULO DETERMINÍSTICO'), findsOneWidget);
+      expect(find.textContaining('812,40'), findsOneWidget);
+      expect(find.text('MENTOR · INTERPRETAÇÃO'), findsOneWidget);
+      expect(find.text('Isso é normal em mercados voláteis.'), findsOneWidget);
+    });
+
+    testWidgets('a plain reply with no markers renders as a single block, not layered chips', (tester) async {
+      final message = ChatMessage(
+        id: '9',
+        role: ChatRole.mentor,
+        text: 'Oi! Como posso ajudar hoje?',
+        timestamp: DateTime(2024, 1, 1),
+      );
+
+      await tester.pumpWidget(buildTestableWidget(message));
+
+      expect(find.text('Oi! Como posso ajudar hoje?'), findsOneWidget);
+      expect(find.textContaining('DADO'), findsNothing);
+      expect(find.text('CÁLCULO DETERMINÍSTICO'), findsNothing);
+      expect(find.text('MENTOR · INTERPRETAÇÃO'), findsNothing);
+    });
+
+    testWidgets('an error message never parses as layers even if it contains marker-like text', (tester) async {
+      final message = ChatMessage(
+        id: '10',
+        role: ChatRole.mentor,
+        text: '[[DATA]]\nAlgo deu errado.',
+        timestamp: DateTime(2024, 1, 1),
+        isError: true,
+      );
+
+      await tester.pumpWidget(buildTestableWidget(message));
+
+      expect(find.textContaining('DADO'), findsNothing);
+      expect(find.textContaining('[[DATA]]'), findsOneWidget);
+    });
   });
 }
