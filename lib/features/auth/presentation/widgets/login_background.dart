@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/cosmic_background.dart';
 
-/// Same living nebula/aurora background every other Wallet screen uses (the
-/// default `bg_nebula.png`, `BackgroundIntensity.balanced`) — previously
-/// this overrode it with `questionary_space_paw.png`, a leftover artwork
-/// asset from the old pre-redesign questionnaire screen, which read as an
-/// inconsistent, off-brand background against the new flat login layout.
+/// Same flat petrol-green background every other Wallet screen uses — see
+/// [CosmicBackground]. Previously this overrode it with a nebula/starfield
+/// effect and, before that, `questionary_space_paw.png` (a leftover artwork
+/// asset from the old pre-redesign questionnaire screen); both read as
+/// off-brand against the Notion mockups' static, uniform background.
 class LoginBackground extends StatelessWidget {
   const LoginBackground({super.key});
 

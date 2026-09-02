@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
-import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/core/utils/game_snack.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/cosmic_background.dart';
@@ -141,7 +140,6 @@ class _QuickSetupScreenState extends State<QuickSetupScreen> {
     if (widget.isSettingsMode) return _buildSettingsScaffold(context);
 
     return OnboardingScaffold(
-      intensity: BackgroundIntensity.balanced,
       step: 2,
       totalSteps: 2,
       title: Translator.translate(AppStrings.quickSetupTitle),
@@ -172,7 +170,6 @@ class _QuickSetupScreenState extends State<QuickSetupScreen> {
         ),
       ),
       body: CosmicBackground(
-        intensity: BackgroundIntensity.subtle,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),

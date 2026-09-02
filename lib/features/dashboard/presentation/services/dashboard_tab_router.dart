@@ -1,4 +1,3 @@
-import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/features/pet/presentation/companion/pet_context.dart';
 
 /// Pure tab-index → behavior mappings for [DashboardScreen]'s 3 bottom-nav
@@ -6,27 +5,16 @@ import 'package:petrimonium/features/pet/presentation/companion/pet_context.dart
 /// Carteira tab — "Home unifica patrimônio total... sem uma aba 'Carteira'
 /// redundante" per the Wallet design system — and Wallet has no Academy tab
 /// either, see docs/ECOSYSTEM.md's Stage 5 note. The `dashboard` feature has
-/// no domain layer of its own, so this small but real business logic (which
-/// background mood and which persistent-companion voice each tab gets)
-/// previously lived inline in the screen; pulled out here so it's
-/// independently testable and the screen only orchestrates widgets.
+/// no domain layer of its own, so this small but real business logic
+/// (which persistent-companion voice each tab gets) previously lived inline
+/// in the screen; pulled out here so it's independently testable and the
+/// screen only orchestrates widgets.
 class DashboardTabRouter {
   DashboardTabRouter._();
 
   static const int homeTab = 0;
   static const int passiveIncomeTab = 1;
   static const int mentorTab = 2;
-
-  // Content-hierarchy comes from swapping intensity per selected tab: full
-  // cosmic expression on Início, progressively quieter for the more
-  // data-dense tabs.
-  static const List<BackgroundIntensity> _tabIntensities = [
-    BackgroundIntensity.immersive, // Início (patrimônio + Mentor)
-    BackgroundIntensity.balanced, // Proventos / Passive income
-    BackgroundIntensity.mentor, // Mentor
-  ];
-
-  static BackgroundIntensity backgroundIntensityFor(int tabIndex) => _tabIntensities[tabIndex];
 
   /// (`docs/PROJECT_CONTEXT.md`'s Pet Companion section, `PetContext`'s doc
   /// comment.) `PetContext.academy` is never returned here — Wallet has no

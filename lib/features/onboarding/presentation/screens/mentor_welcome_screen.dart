@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
-import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/widgets/onboarding_scaffold.dart';
@@ -24,7 +23,6 @@ class MentorWelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
-      intensity: BackgroundIntensity.mentor,
       step: 1,
       totalSteps: 2,
       title: '',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
-import 'package:petrimonium/core/theme/background_presets.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/cosmic_background.dart';
 import 'package:petrimonium/core/widgets/game_button.dart';
@@ -35,7 +34,6 @@ class PrivacyAndMemoryScreen extends StatelessWidget {
         ),
       ),
       body: CosmicBackground(
-        intensity: BackgroundIntensity.subtle,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
