@@ -9,12 +9,15 @@ import 'package:petrimonium/core/widgets/app_loading_indicator.dart';
 import 'package:petrimonium/core/widgets/layer_chip.dart';
 import 'package:petrimonium/features/home/presentation/widgets/mentor_insight_card.dart';
 import 'package:petrimonium/features/home/presentation/widgets/portfolio_not_connected_card.dart';
+import 'package:petrimonium/features/investment/presentation/screens/investment_configuration_screen.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/investment_type_display.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/wealth_change_breakdown.dart';
 import 'package:petrimonium/features/portfolio/presentation/controllers/portfolio_controller.dart';
+import 'package:petrimonium/features/portfolio/presentation/widgets/allocation_donut_card.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/holdings_section.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/shared/error_banner.dart';
+import 'package:petrimonium/features/portfolio/presentation/widgets/wealth_evolution_card.dart';
 
 /// Wallet's "Início" — the unified patrimônio + Mentor screen, absorbing
 /// what used to be a separate Carteira tab ("Home unifica patrimônio
@@ -94,16 +97,29 @@ class _OverviewScreenState extends State<OverviewScreen> {
             else ...[
               _WealthHeroCard(controller: controller),
               const SizedBox(height: 16),
+              AllocationDonutCard(
+                allocation: controller.allocation,
+                totalValue: controller.summary.currentValue,
+              ),
+              const SizedBox(height: 16),
+              WealthEvolutionCard(controller: controller),
+              const SizedBox(height: 16),
               _WealthChangeCard(breakdown: controller.wealthChange30d),
               const SizedBox(height: 20),
-              Text(
-                Translator.translate(AppStrings.homeHoldingsSectionTitle),
-                style: TextStyle(
-                  color: context.colors.textTertiary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    Translator.translate(AppStrings.homeHoldingsSectionTitle),
+                    style: TextStyle(
+                      color: context.colors.textTertiary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  _AddAssetButton(),
+                ],
               ),
               const SizedBox(height: 8),
               HoldingsSection(
@@ -262,6 +278,44 @@ class _WealthChangeCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Opens [InvestmentConfigurationScreen] to add another asset once the
+/// portfolio already has at least one — [PortfolioNotConnectedCard] covers
+/// the zero-holdings case with its own full-width CTA, so this only needs to
+/// exist here in the "Meus ativos" section header. The screen itself already
+/// seeds existing holdings and replaces the whole app shell on confirm (see
+/// `InvestmentConfigurationScreen._goHome`), so Home picks up the change
+/// with no extra refresh call needed here.
+class _AddAssetButton extends StatelessWidget {
+  const _AddAssetButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.colors;
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const InvestmentConfigurationScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_circle_outline, size: 15, color: tokens.primary),
+            const SizedBox(width: 4),
+            Text(
+              Translator.translate(AppStrings.homeAddAssetLabel),
+              style: TextStyle(color: tokens.primary, fontSize: 11, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -66,6 +66,7 @@ class AppStrings {
   static const String homeChangeAportesLabel = "homeChangeAportesLabel";
   static const String homeChangeRendimentosLabel = "homeChangeRendimentosLabel";
   static const String homeHoldingsSectionTitle = "homeHoldingsSectionTitle";
+  static const String homeAddAssetLabel = "homeAddAssetLabel";
 
   // Proventos tab + notification popover.
   static const String proventosTitle = "proventosTitle";

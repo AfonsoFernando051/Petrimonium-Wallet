@@ -5,9 +5,12 @@ import 'package:petrimonium/core/theme/app_theme.dart';
 import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/home/presentation/screens/overview_screen.dart';
 import 'package:petrimonium/features/home/presentation/widgets/portfolio_not_connected_card.dart';
+import 'package:petrimonium/features/investment/presentation/screens/investment_configuration_screen.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
 import 'package:petrimonium/features/portfolio/presentation/controllers/portfolio_controller.dart';
+import 'package:petrimonium/features/portfolio/presentation/widgets/allocation_donut_card.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/holdings_section.dart';
+import 'package:petrimonium/features/portfolio/presentation/widgets/wealth_evolution_card.dart';
 
 import '../../../portfolio/presentation/controllers/portfolio_controller_test.dart';
 import '../../../portfolio/domain/services/portfolio_test_fixtures.dart';
@@ -70,6 +73,34 @@ void main() {
       expect(find.text('Rendimentos'), findsOneWidget);
       expect(find.text('+R\$ 0,00'), findsNWidgets(3));
       expect(find.byType(HoldingsSection), findsOneWidget);
+      expect(find.byType(AllocationDonutCard), findsOneWidget);
+      expect(find.byType(WealthEvolutionCard), findsOneWidget);
+    });
+
+    testWidgets('tapping "Adicionar" next to Meus ativos opens InvestmentConfigurationScreen', (tester) async {
+      final holdings = [lot(ticker: 'PETR4', quantity: 100, purchasePrice: 10)];
+      repository.holdingsToReturn = Holding.fromLots(holdings);
+      repository.summaryToReturn = statsFromLots(holdings).summary;
+      await controller.loadAll();
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pump();
+      await tester.pump();
+
+      // The button sits below the new chart cards, off the default test
+      // viewport — scroll it into view first, same as other CTAs further
+      // down a scrollable form elsewhere in this codebase.
+      await tester.ensureVisible(find.text('Adicionar'));
+      await tester.pump();
+
+      // Not pumpAndSettle(): InvestmentConfigurationScreen kicks off real
+      // (unmocked, DI-backed) network calls in initState to seed existing
+      // holdings — bounded pumps only, same pattern as main_test.dart.
+      await tester.tap(find.text('Adicionar'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(InvestmentConfigurationScreen), findsOneWidget);
     });
 
     testWidgets('shows the "Bem-vindo(a) de volta" greeting', (tester) async {
