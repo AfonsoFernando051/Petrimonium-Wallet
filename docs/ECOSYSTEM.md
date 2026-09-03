@@ -11,6 +11,13 @@ changed yet." A prior Claude Code session ran the repo's onboarding prompt,
 produced the audit and findings below, and ended without the user responding
 — nothing here had been confirmed or implemented at that point.
 
+## Notion
+
+Project workspace: [Petrimonium](https://app.notion.com/p/3d08bfdad90780c3a935c0054a11770d)
+— product docs, the Atlas Técnico (what the system *is*, today, read by
+architecture slice) and the Demandas/Correção de Bugs boards findings from
+work here should be tracked against.
+
 ## The three repos
 
 | Repo | Job | Money |
