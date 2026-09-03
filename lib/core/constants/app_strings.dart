@@ -68,6 +68,25 @@ class AppStrings {
   static const String homeHoldingsSectionTitle = "homeHoldingsSectionTitle";
   static const String homeAddAssetLabel = "homeAddAssetLabel";
 
+  // AddAssetScreen — Wallet's own single-asset "add asset" screen, distinct
+  // from InvestmentConfigurationScreen's Academy-style onboarding wizard.
+  static const String addAssetTitle = "addAssetTitle";
+  static const String addAssetMentorTip = "addAssetMentorTip";
+  static const String addAssetTypeLabel = "addAssetTypeLabel";
+  static const String addAssetTickerHint = "addAssetTickerHint";
+  static const String addAssetQuantityHint = "addAssetQuantityHint";
+  static const String addAssetPriceHint = "addAssetPriceHint";
+  static const String addAssetDateHint = "addAssetDateHint";
+  static const String addAssetEstimatedValueLabel = "addAssetEstimatedValueLabel";
+  static const String addAssetPortfolioAfterLabel = "addAssetPortfolioAfterLabel";
+  static const String addAssetFooterNote = "addAssetFooterNote";
+  static const String addAssetCta = "addAssetCta";
+  static const String addAssetSuccessSnack = "addAssetSuccessSnack";
+  static const String addAssetFailedSnack = "addAssetFailedSnack";
+  static const String addAssetSelectTypeError = "addAssetSelectTypeError";
+  static const String addAssetSelectDateError = "addAssetSelectDateError";
+  static const String addAssetLoadFailedBanner = "addAssetLoadFailedBanner";
+
   // Proventos tab + notification popover.
   static const String proventosTitle = "proventosTitle";
   static const String proventosSubtitle = "proventosSubtitle";

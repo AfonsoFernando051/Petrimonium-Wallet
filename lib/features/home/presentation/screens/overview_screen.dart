@@ -9,7 +9,7 @@ import 'package:petrimonium/core/widgets/app_loading_indicator.dart';
 import 'package:petrimonium/core/widgets/layer_chip.dart';
 import 'package:petrimonium/features/home/presentation/widgets/mentor_insight_card.dart';
 import 'package:petrimonium/features/home/presentation/widgets/portfolio_not_connected_card.dart';
-import 'package:petrimonium/features/investment/presentation/screens/investment_configuration_screen.dart';
+import 'package:petrimonium/features/investment/presentation/screens/add_asset_screen.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/investment_type_display.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/wealth_change_breakdown.dart';
@@ -118,7 +118,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                       letterSpacing: 0.6,
                     ),
                   ),
-                  _AddAssetButton(),
+                  _AddAssetButton(controller: controller),
                 ],
               ),
               const SizedBox(height: 8),
@@ -283,15 +283,16 @@ class _WealthChangeCard extends StatelessWidget {
   }
 }
 
-/// Opens [InvestmentConfigurationScreen] to add another asset once the
-/// portfolio already has at least one — [PortfolioNotConnectedCard] covers
-/// the zero-holdings case with its own full-width CTA, so this only needs to
-/// exist here in the "Meus ativos" section header. The screen itself already
-/// seeds existing holdings and replaces the whole app shell on confirm (see
-/// `InvestmentConfigurationScreen._goHome`), so Home picks up the change
-/// with no extra refresh call needed here.
+/// Opens [AddAssetScreen] to add another asset once the portfolio already
+/// has at least one — [PortfolioNotConnectedCard] covers the zero-holdings
+/// case with its own full-width CTA into the Academy-style onboarding
+/// wizard (`InvestmentConfigurationScreen`), so this only needs to exist
+/// here in the "Meus ativos" section header, opening the plain Wallet
+/// single-asset screen instead.
 class _AddAssetButton extends StatelessWidget {
-  const _AddAssetButton();
+  const _AddAssetButton({required this.controller});
+
+  final PortfolioController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +301,7 @@ class _AddAssetButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const InvestmentConfigurationScreen()),
+          MaterialPageRoute(builder: (_) => AddAssetScreen(controller: controller)),
         );
       },
       child: Padding(
