@@ -10,6 +10,30 @@ void main() {
     repository = OnboardingStateRepository();
   });
 
+  group('per-account isolation (Demanda #57)', () {
+    test('switching accounts on the same device never inherits the previous account\'s onboarding state', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_email', 'alice@example.com');
+      await repository.markMentorWelcomeSeen();
+      await repository.markQuickSetupDone();
+      await repository.markPortfolioSkipped(now: DateTime(2024, 1, 1));
+
+      // A different account logs in on the same device.
+      await prefs.setString('auth_email', 'bob@example.com');
+
+      expect(await repository.hasSeenMentorWelcome(), isFalse);
+      expect(await repository.hasCompletedQuickSetup(), isFalse);
+      expect(await repository.isPortfolioStepDone(), isFalse);
+
+      // Alice logging back in still finds her own progress exactly as she left it.
+      await prefs.setString('auth_email', 'alice@example.com');
+
+      expect(await repository.hasSeenMentorWelcome(), isTrue);
+      expect(await repository.hasCompletedQuickSetup(), isTrue);
+      expect(await repository.isPortfolioStepDone(), isTrue);
+    });
+  });
+
   group('hasSeenMentorWelcome / markMentorWelcomeSeen', () {
     test('defaults to false', () async {
       expect(await repository.hasSeenMentorWelcome(), isFalse);

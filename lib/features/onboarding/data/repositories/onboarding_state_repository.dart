@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:petrimonium/core/utils/user_scoped_prefs.dart';
+
 /// After this many app sessions with portfolio still unconnected, the pet
 /// may gently nudge the user on Home (see `shouldShowPortfolioReminder`).
 const int kPortfolioReminderAfterSessions = 3;
@@ -14,6 +16,13 @@ const int kPortfolioReminderCooldownSessions = 3;
 /// backend field for any of this — it only decides which screen the app
 /// opens to and what Home shows, mirroring `PetPreferencesRepository`'s
 /// "local-only, nothing else consumes it yet" pattern.
+///
+/// Every key is scoped to the currently logged-in account (see
+/// [UserScopedPrefs]) — switching accounts on the same device must never
+/// route or nudge one user based on another's onboarding progress (Demanda
+/// #57). A device that already has data under the old, unscoped key names
+/// is migrated onto the current account's scoped keys the first time each
+/// is read, same pattern as `AchievementsLocalRepository`.
 class OnboardingStateRepository {
   static const _hasSetGoalKey = 'onboarding_has_set_goal';
   static const _tutorialCompletedKey = 'onboarding_tutorial_completed';
@@ -34,71 +43,71 @@ class OnboardingStateRepository {
   /// Wallet's `StartRouteResolver` actually reads.
   Future<bool> hasSeenMentorWelcome() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_mentorWelcomeSeenKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _mentorWelcomeSeenKey)) ?? false;
   }
 
   Future<void> markMentorWelcomeSeen() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_mentorWelcomeSeenKey, true);
+    await prefs.setBool(await UserScopedPrefs.key(_mentorWelcomeSeenKey), true);
   }
 
   Future<bool> hasCompletedQuickSetup() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_quickSetupDoneKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _quickSetupDoneKey)) ?? false;
   }
 
   Future<void> markQuickSetupDone() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_quickSetupDoneKey, true);
+    await prefs.setBool(await UserScopedPrefs.key(_quickSetupDoneKey), true);
   }
 
   Future<bool> hasSetGoal() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_hasSetGoalKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _hasSetGoalKey)) ?? false;
   }
 
   Future<void> setGoalChosen() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_hasSetGoalKey, true);
+    await prefs.setBool(await UserScopedPrefs.key(_hasSetGoalKey), true);
   }
 
   Future<bool> isTutorialCompleted() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_tutorialCompletedKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _tutorialCompletedKey)) ?? false;
   }
 
   Future<void> completeTutorial() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_tutorialCompletedKey, true);
+    await prefs.setBool(await UserScopedPrefs.key(_tutorialCompletedKey), true);
   }
 
   Future<bool> isPortfolioStepDone() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_portfolioStepDoneKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _portfolioStepDoneKey)) ?? false;
   }
 
   Future<bool> isPortfolioConnected() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_portfolioConnectedKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _portfolioConnectedKey)) ?? false;
   }
 
   /// Marks the portfolio step as resolved via import/manual entry — the
   /// user has real holdings now, so Home shows live data, not placeholders.
   Future<void> markPortfolioConnected() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_portfolioStepDoneKey, true);
-    await prefs.setBool(_portfolioConnectedKey, true);
-    await prefs.remove(_portfolioSkippedAtKey);
+    await prefs.setBool(await UserScopedPrefs.key(_portfolioStepDoneKey), true);
+    await prefs.setBool(await UserScopedPrefs.key(_portfolioConnectedKey), true);
+    await prefs.remove(await UserScopedPrefs.key(_portfolioSkippedAtKey));
   }
 
   /// Marks the portfolio step as resolved via "Skip For Now" — Home shows
   /// placeholders, and the pet may nudge the user again later.
   Future<void> markPortfolioSkipped({DateTime? now}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_portfolioStepDoneKey, true);
-    await prefs.setBool(_portfolioConnectedKey, false);
+    await prefs.setBool(await UserScopedPrefs.key(_portfolioStepDoneKey), true);
+    await prefs.setBool(await UserScopedPrefs.key(_portfolioConnectedKey), false);
     await prefs.setString(
-      _portfolioSkippedAtKey,
+      await UserScopedPrefs.key(_portfolioSkippedAtKey),
       (now ?? DateTime.now()).toIso8601String(),
     );
   }
@@ -107,8 +116,9 @@ class OnboardingStateRepository {
   /// far — call once per app boot. Used to pace the reminder cooldown.
   Future<int> incrementSessionCount() async {
     final prefs = await SharedPreferences.getInstance();
-    final next = (prefs.getInt(_sessionCountKey) ?? 0) + 1;
-    await prefs.setInt(_sessionCountKey, next);
+    final key = await _migrateInt(prefs, _sessionCountKey);
+    final next = (prefs.getInt(key) ?? 0) + 1;
+    await prefs.setInt(key, next);
     return next;
   }
 
@@ -116,12 +126,12 @@ class OnboardingStateRepository {
   /// (i.e. this session's count), without incrementing it again.
   Future<int> currentSessionCount() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_sessionCountKey) ?? 0;
+    return prefs.getInt(await _migrateInt(prefs, _sessionCountKey)) ?? 0;
   }
 
   Future<void> markReminderShown(int atSession) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_reminderShownAtSessionKey, atSession);
+    await prefs.setInt(await UserScopedPrefs.key(_reminderShownAtSessionKey), atSession);
   }
 
   /// Whether the pet should nudge the user about connecting their portfolio
@@ -131,14 +141,14 @@ class OnboardingStateRepository {
   Future<bool> shouldShowPortfolioReminder() async {
     final prefs = await SharedPreferences.getInstance();
     final skipped =
-        prefs.getBool(_portfolioConnectedKey) == false &&
-        prefs.getString(_portfolioSkippedAtKey) != null;
+        prefs.getBool(await _migrateBool(prefs, _portfolioConnectedKey)) == false &&
+        prefs.getString(await _migrateString(prefs, _portfolioSkippedAtKey)) != null;
     if (!skipped) return false;
 
-    final sessionCount = prefs.getInt(_sessionCountKey) ?? 0;
+    final sessionCount = prefs.getInt(await _migrateInt(prefs, _sessionCountKey)) ?? 0;
     if (sessionCount < kPortfolioReminderAfterSessions) return false;
 
-    final lastShown = prefs.getInt(_reminderShownAtSessionKey);
+    final lastShown = prefs.getInt(await _migrateInt(prefs, _reminderShownAtSessionKey));
     if (lastShown != null &&
         sessionCount - lastShown < kPortfolioReminderCooldownSessions) {
       return false;
@@ -155,11 +165,52 @@ class OnboardingStateRepository {
   /// nudge while holdings stay at zero.
   Future<bool> hasSeenPortfolioActivation() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_portfolioActivationSeenKey) ?? false;
+    return prefs.getBool(await _migrateBool(prefs, _portfolioActivationSeenKey)) ?? false;
   }
 
   Future<void> markPortfolioActivationSeen() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_portfolioActivationSeenKey, true);
+    await prefs.setBool(await UserScopedPrefs.key(_portfolioActivationSeenKey), true);
+  }
+
+  /// Returns [baseKey]'s scoped form, migrating over any value still sitting
+  /// under the old unscoped key the first time it's read on this device —
+  /// see `AchievementsLocalRepository._migrateStringList` for the same
+  /// pattern and its rationale. One helper per `SharedPreferences` value
+  /// type, since it has no generic get/set pair.
+  Future<String> _migrateBool(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getBool(baseKey);
+      if (legacy != null) {
+        await prefs.setBool(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
+  }
+
+  Future<String> _migrateInt(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getInt(baseKey);
+      if (legacy != null) {
+        await prefs.setInt(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
+  }
+
+  Future<String> _migrateString(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getString(baseKey);
+      if (legacy != null) {
+        await prefs.setString(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
   }
 }

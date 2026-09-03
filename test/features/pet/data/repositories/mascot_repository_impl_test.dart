@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:petrimonium/core/utils/user_scoped_prefs.dart';
 import 'package:petrimonium/features/game/data/datasources/gamification_remote_datasource.dart';
 import 'package:petrimonium/features/pet/data/datasources/pet_remote_datasource.dart';
 import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
@@ -46,11 +47,13 @@ void main() {
       expect(profile.specie, PetSpecieEnum.FOX);
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getInt('mascot_xp'), 120);
-      expect(prefs.getString('mascot_specie'), 'FOX');
+      expect(prefs.getInt(await UserScopedPrefs.key('mascot_xp')), 120);
+      expect(prefs.getString(await UserScopedPrefs.key('mascot_specie')), 'FOX');
     });
 
     test('falls back to the last-known cached xp when the gamification call fails', () async {
+      // Seeded under the pre-scoping raw key on purpose — this exercises
+      // loadProfile's legacy-key migration, not a scoped write.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('mascot_xp', 55);
 
@@ -63,6 +66,7 @@ void main() {
     });
 
     test('falls back to the last-known cached specie when the pet call fails', () async {
+      // Seeded under the pre-scoping raw key on purpose — legacy-key migration.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('mascot_specie', 'BEAR');
 
@@ -75,6 +79,7 @@ void main() {
     });
 
     test('keeps the cached specie when the backend pet payload has no specie field', () async {
+      // Seeded under the pre-scoping raw key on purpose — legacy-key migration.
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('mascot_specie', 'WOLF');
 
@@ -114,24 +119,50 @@ void main() {
     });
   });
 
+  group('per-account isolation (Demanda #57)', () {
+    test('switching accounts on the same device never inherits the previous account\'s pet', () async {
+      when(() => mockGamificationDataSource.fetchSummary()).thenThrow(Exception('offline'));
+      when(() => mockPetDataSource.getMyPet()).thenAnswer((_) async => null);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_email', 'alice@example.com');
+      await repository.saveName('Rex');
+      await repository.saveSpecie(PetSpecieEnum.FOX);
+
+      // A different account logs in on the same device.
+      await prefs.setString('auth_email', 'bob@example.com');
+      final bobsProfile = await repository.loadProfile();
+
+      expect(bobsProfile.name, isNull);
+      expect(bobsProfile.specie, PetSpecieEnum.DOG); // the default, not Alice's FOX
+
+      // Alice logging back in still finds her own pet exactly as she left it.
+      await prefs.setString('auth_email', 'alice@example.com');
+      final alicesProfile = await repository.loadProfile();
+
+      expect(alicesProfile.name, 'Rex');
+      expect(alicesProfile.specie, PetSpecieEnum.FOX);
+    });
+  });
+
   group('save methods', () {
     test('saveStage persists the stage name', () async {
       await repository.saveStage(PetEvolutionStage.values.last);
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('mascot_stage'), PetEvolutionStage.values.last.name);
+      expect(prefs.getString(await UserScopedPrefs.key('mascot_stage')), PetEvolutionStage.values.last.name);
     });
 
     test('saveNetWorth persists the value', () async {
       await repository.saveNetWorth(999.5);
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getDouble('mascot_net_worth'), 999.5);
+      expect(prefs.getDouble(await UserScopedPrefs.key('mascot_net_worth')), 999.5);
     });
 
     test('saveLastActiveAt persists an ISO8601 string that round-trips', () async {
       final at = DateTime.utc(2024, 5, 1, 12);
       await repository.saveLastActiveAt(at);
       final prefs = await SharedPreferences.getInstance();
-      expect(DateTime.parse(prefs.getString('mascot_last_active_at')!), at);
+      expect(DateTime.parse(prefs.getString(await UserScopedPrefs.key('mascot_last_active_at'))!), at);
     });
 
     test('saveEquippedAccessories removes the slot when unequipped', () async {
@@ -140,7 +171,7 @@ void main() {
       await repository.saveEquippedAccessories({});
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('mascot_equipped_${slot.name}'), isNull);
+      expect(prefs.getString(await UserScopedPrefs.key('mascot_equipped_${slot.name}')), isNull);
     });
   });
 }

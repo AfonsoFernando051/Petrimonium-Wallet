@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:petrimonium/core/utils/user_scoped_prefs.dart';
 import 'package:petrimonium/features/game/data/datasources/gamification_remote_datasource.dart';
 import 'package:petrimonium/features/game/domain/entities/gamification_summary.dart';
 import 'package:petrimonium/features/pet/data/datasources/pet_remote_datasource.dart';
@@ -16,6 +17,13 @@ import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.d
 /// `PetRemoteDataSource`) and refreshes the cache. Offline, it falls back to
 /// the last-known-real cached value — legitimate staleness, never a
 /// fabricated number.
+///
+/// Every key is scoped to the currently logged-in account (see
+/// [UserScopedPrefs]) — switching accounts on the same device must never
+/// show one user's pet (name, specie, stage, XP, accessories, ...) as
+/// another's. A device that already has data under the old, unscoped key
+/// names is migrated onto the current account's scoped keys the first time
+/// each is read, same pattern as `AchievementsLocalRepository`.
 class MascotRepositoryImpl implements MascotRepository {
   MascotRepositoryImpl({
     required GamificationRemoteDataSource gamificationRemoteDataSource,
@@ -39,35 +47,35 @@ class MascotRepositoryImpl implements MascotRepository {
   Future<PetProfile> loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final name = prefs.getString(_nameKey);
-    final stageName = prefs.getString(_stageKey);
+    final name = prefs.getString(await _migrateString(prefs, _nameKey));
+    final stageName = prefs.getString(await _migrateString(prefs, _stageKey));
     final stage = PetEvolutionStage.values.firstWhere(
       (s) => s.name == stageName,
       orElse: () => PetEvolutionStage.babyDog,
     );
 
-    var xp = prefs.getInt(_xpKey) ?? 0;
-    final specieName = prefs.getString(_specieKey);
+    var xp = prefs.getInt(await _migrateInt(prefs, _xpKey)) ?? 0;
+    final specieName = prefs.getString(await _migrateString(prefs, _specieKey));
     var specie = PetSpecieEnum.values.firstWhere(
       (s) => s.name == specieName,
       orElse: () => PetSpecieEnum.DOG,
     );
-    final netWorth = prefs.getDouble(_netWorthKey) ?? 0;
+    final netWorth = prefs.getDouble(await _migrateDouble(prefs, _netWorthKey)) ?? 0;
 
-    final unlockedNames = prefs.getStringList(_unlockedKey) ?? const [];
+    final unlockedNames = prefs.getStringList(await _migrateStringList(prefs, _unlockedKey)) ?? const [];
     final unlocked = <PetAccessoryId>{
       for (final n in unlockedNames) ..._findAccessoryById(n),
     };
 
     final equipped = <AccessoryType, PetAccessoryId>{};
     for (final slot in AccessoryType.values) {
-      final saved = prefs.getString('$_equippedKeyPrefix${slot.name}');
+      final saved = prefs.getString(await _migrateString(prefs, '$_equippedKeyPrefix${slot.name}'));
       if (saved == null) continue;
       final matches = _findAccessoryById(saved);
       if (matches.isNotEmpty) equipped[slot] = matches.first;
     }
 
-    final lastActiveIso = prefs.getString(_lastActiveAtKey);
+    final lastActiveIso = prefs.getString(await _migrateString(prefs, _lastActiveAtKey));
     final lastActiveAt =
         lastActiveIso != null ? DateTime.tryParse(lastActiveIso) : null;
 
@@ -108,31 +116,31 @@ class MascotRepositoryImpl implements MascotRepository {
   @override
   Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_nameKey, name);
+    await prefs.setString(await UserScopedPrefs.key(_nameKey), name);
   }
 
   @override
   Future<void> saveStage(PetEvolutionStage stage) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_stageKey, stage.name);
+    await prefs.setString(await UserScopedPrefs.key(_stageKey), stage.name);
   }
 
   @override
   Future<void> saveXp(int xp) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_xpKey, xp);
+    await prefs.setInt(await UserScopedPrefs.key(_xpKey), xp);
   }
 
   @override
   Future<void> saveSpecie(PetSpecieEnum specie) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_specieKey, specie.name);
+    await prefs.setString(await UserScopedPrefs.key(_specieKey), specie.name);
   }
 
   @override
   Future<void> saveNetWorth(double netWorth) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_netWorthKey, netWorth);
+    await prefs.setDouble(await UserScopedPrefs.key(_netWorthKey), netWorth);
   }
 
   @override
@@ -141,7 +149,7 @@ class MascotRepositoryImpl implements MascotRepository {
   ) async {
     final prefs = await SharedPreferences.getInstance();
     for (final slot in AccessoryType.values) {
-      final key = '$_equippedKeyPrefix${slot.name}';
+      final key = await UserScopedPrefs.key('$_equippedKeyPrefix${slot.name}');
       final accessory = equipped[slot];
       if (accessory == null) {
         await prefs.remove(key);
@@ -155,7 +163,7 @@ class MascotRepositoryImpl implements MascotRepository {
   Future<void> saveUnlockedAccessories(Set<PetAccessoryId> unlocked) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-      _unlockedKey,
+      await UserScopedPrefs.key(_unlockedKey),
       unlocked.map((a) => a.name).toList(),
     );
   }
@@ -163,7 +171,60 @@ class MascotRepositoryImpl implements MascotRepository {
   @override
   Future<void> saveLastActiveAt(DateTime lastActiveAt) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastActiveAtKey, lastActiveAt.toIso8601String());
+    await prefs.setString(await UserScopedPrefs.key(_lastActiveAtKey), lastActiveAt.toIso8601String());
+  }
+
+  /// Returns [baseKey]'s scoped form, migrating over any value still sitting
+  /// under the old unscoped key the first time it's read on this device —
+  /// see `AchievementsLocalRepository._migrateStringList` for the same
+  /// pattern and its rationale. One helper per `SharedPreferences` value
+  /// type, since it has no generic get/set pair.
+  Future<String> _migrateString(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getString(baseKey);
+      if (legacy != null) {
+        await prefs.setString(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
+  }
+
+  Future<String> _migrateInt(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getInt(baseKey);
+      if (legacy != null) {
+        await prefs.setInt(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
+  }
+
+  Future<String> _migrateDouble(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getDouble(baseKey);
+      if (legacy != null) {
+        await prefs.setDouble(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
+  }
+
+  Future<String> _migrateStringList(SharedPreferences prefs, String baseKey) async {
+    final scopedKey = await UserScopedPrefs.key(baseKey);
+    if (!prefs.containsKey(scopedKey)) {
+      final legacy = prefs.getStringList(baseKey);
+      if (legacy != null) {
+        await prefs.setStringList(scopedKey, legacy);
+        await prefs.remove(baseKey);
+      }
+    }
+    return scopedKey;
   }
 }
 
