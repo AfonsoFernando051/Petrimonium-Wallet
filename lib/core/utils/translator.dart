@@ -59,6 +59,23 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Mesma conta Petrimonium da Academy. Se você já estudou por lá, seu Pet e suas preferências vêm junto.",
+      AppStrings.petSetupTitle: "Crie seu Pet",
+      AppStrings.petSetupSubtitle:
+          "Não encontramos um Pet Petrimonium na sua conta. Ele é a mesma identidade na Academy e na Wallet — crie o seu agora.",
+      AppStrings.petSetupSpeciesLabel: "Escolha uma espécie",
+      AppStrings.petSetupNameLabel: "Dê um nome a ele",
+      AppStrings.petSetupNameHint: "Ex.: Nino",
+      AppStrings.petSetupFooterNote:
+          "Se você já estudou na Academy, seu Pet e progresso aparecem sozinhos aqui — esta etapa não é necessária.",
+      AppStrings.petSetupCta: "Criar meu Pet e continuar",
+      AppStrings.petSetupFailedSnack: "Não foi possível criar seu Pet. Tente novamente.",
+      AppStrings.petSpecieDog: "Cão",
+      AppStrings.petSpecieCat: "Gato",
+      AppStrings.petSpecieWolf: "Lobo",
+      AppStrings.petSpecieFox: "Raposa",
+      AppStrings.petSpecieBear: "Urso",
+      AppStrings.petSpecieLion: "Leão",
+      AppStrings.petSpecieOwl: "Coruja",
       AppStrings.mentorWelcomeHeadline: "Aqui é sobre o seu patrimônio real.",
       AppStrings.mentorWelcomeParagraph1:
           "Na Academy você aprendeu. Aqui você organiza, acompanha e entende seu dinheiro de verdade.",
@@ -725,6 +742,23 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Same Petrimonium account as the Academy. If you've already studied there, your Pet and preferences carry over.",
+      AppStrings.petSetupTitle: "Create your Pet",
+      AppStrings.petSetupSubtitle:
+          "We couldn't find a Petrimonium Pet on your account. It's the same identity across the Academy and the Wallet — create yours now.",
+      AppStrings.petSetupSpeciesLabel: "Choose a species",
+      AppStrings.petSetupNameLabel: "Give it a name",
+      AppStrings.petSetupNameHint: "E.g.: Nino",
+      AppStrings.petSetupFooterNote:
+          "If you've already studied in the Academy, your Pet and progress show up here automatically — this step isn't needed.",
+      AppStrings.petSetupCta: "Create my Pet and continue",
+      AppStrings.petSetupFailedSnack: "Couldn't create your Pet. Please try again.",
+      AppStrings.petSpecieDog: "Dog",
+      AppStrings.petSpecieCat: "Cat",
+      AppStrings.petSpecieWolf: "Wolf",
+      AppStrings.petSpecieFox: "Fox",
+      AppStrings.petSpecieBear: "Bear",
+      AppStrings.petSpecieLion: "Lion",
+      AppStrings.petSpecieOwl: "Owl",
       AppStrings.mentorWelcomeHeadline: "This is about your real wealth.",
       AppStrings.mentorWelcomeParagraph1:
           "In the Academy you learned. Here you organize, track and understand your real money.",
@@ -1384,6 +1418,23 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Misma cuenta Petrimonium que la Academy. Si ya estudiaste allí, tu Pet y tus preferencias vienen junto.",
+      AppStrings.petSetupTitle: "Crea tu Pet",
+      AppStrings.petSetupSubtitle:
+          "No encontramos un Pet de Petrimonium en tu cuenta. Es la misma identidad en la Academy y en la Wallet — crea el tuyo ahora.",
+      AppStrings.petSetupSpeciesLabel: "Elige una especie",
+      AppStrings.petSetupNameLabel: "Ponle un nombre",
+      AppStrings.petSetupNameHint: "Ej.: Nino",
+      AppStrings.petSetupFooterNote:
+          "Si ya estudiaste en la Academy, tu Pet y tu progreso aparecen solos aquí — este paso no es necesario.",
+      AppStrings.petSetupCta: "Crear mi Pet y continuar",
+      AppStrings.petSetupFailedSnack: "No se pudo crear tu Pet. Inténtalo de nuevo.",
+      AppStrings.petSpecieDog: "Perro",
+      AppStrings.petSpecieCat: "Gato",
+      AppStrings.petSpecieWolf: "Lobo",
+      AppStrings.petSpecieFox: "Zorro",
+      AppStrings.petSpecieBear: "Oso",
+      AppStrings.petSpecieLion: "León",
+      AppStrings.petSpecieOwl: "Búho",
       AppStrings.mentorWelcomeHeadline: "Aquí se trata de tu patrimonio real.",
       AppStrings.mentorWelcomeParagraph1:
           "En la Academy aprendiste. Aquí organizas, sigues y entiendes tu dinero de verdad.",

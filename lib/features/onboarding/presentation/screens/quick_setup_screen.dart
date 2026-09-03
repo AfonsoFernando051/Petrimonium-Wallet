@@ -23,9 +23,14 @@ import 'package:petrimonium/main.dart';
 /// a plain back-button Scaffold instead of the onboarding step chrome, and
 /// "Salvar" (save-and-pop) instead of completing onboarding.
 class QuickSetupScreen extends StatefulWidget {
-  const QuickSetupScreen({super.key, this.isSettingsMode = false});
+  const QuickSetupScreen({super.key, this.isSettingsMode = false, this.totalSteps = 2});
 
   final bool isSettingsMode;
+
+  /// 2 for the common case (account already has a Pet) or 3 when
+  /// `PetSetupScreen` ran first — this screen is always the last step, so
+  /// its own step number is [totalSteps] itself. Unused in settings mode.
+  final int totalSteps;
 
   @override
   State<QuickSetupScreen> createState() => _QuickSetupScreenState();
@@ -140,8 +145,8 @@ class _QuickSetupScreenState extends State<QuickSetupScreen> {
     if (widget.isSettingsMode) return _buildSettingsScaffold(context);
 
     return OnboardingScaffold(
-      step: 2,
-      totalSteps: 2,
+      step: widget.totalSteps,
+      totalSteps: widget.totalSteps,
       title: Translator.translate(AppStrings.quickSetupTitle),
       subtitle: Translator.translate(AppStrings.quickSetupSubtitle),
       ctaLabel: Translator.translate(AppStrings.quickSetupCta),

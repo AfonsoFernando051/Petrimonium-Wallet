@@ -225,18 +225,32 @@ void main() {
   });
 
   test(
-    'a Wallet-first signup with no pet gets a default silently provisioned, no chooser screen shown',
+    'a Wallet-first signup with no pet routes to petSetup, without provisioning anything itself',
     () async {
       petRepository.hasPet = false;
       mascotRepository.profileToReturn = PetProfile(name: null);
 
       final route = await resolver.resolve();
 
-      expect(petRepository.configuredSpecies, [PetSpecieEnum.DOG]);
+      // PetSetupScreen — not the resolver — is responsible for calling
+      // configurePet/saveName once the user actually chooses a species/name.
+      expect(petRepository.configuredSpecies, isEmpty);
+      expect(mascotRepository.savedNames, isEmpty);
+      expect(route, StartRoute.petSetup);
+    },
+  );
+
+  test(
+    'an existing pet with no locally-cached name (e.g. an Academy pet on a new device) gets the default name backfilled, no petSetup shown',
+    () async {
+      petRepository.hasPet = true;
+      mascotRepository.profileToReturn = PetProfile(name: null);
+
+      final route = await resolver.resolve();
+
+      expect(petRepository.configuredSpecies, isEmpty);
       expect(mascotRepository.savedNames, [kDefaultWalletPetName]);
-      // Auto-provisioning is silent — it never becomes a route of its own,
-      // resolution continues straight to the real (mentor welcome/setup/home) gates.
-      expect(route, StartRoute.home);
+      expect(route, isNot(StartRoute.petSetup));
     },
   );
 
@@ -268,6 +282,7 @@ void main() {
       final route = await resolver.resolve();
 
       expect(route, isNot(StartRoute.home));
+      expect(route, isNot(StartRoute.petSetup));
       expect(route, isNot(StartRoute.mentorWelcome));
       expect(route, isNot(StartRoute.quickSetup));
     },

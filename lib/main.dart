@@ -16,6 +16,7 @@ import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/auth/presentation/screens/login_screen.dart';
 import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/mentor_welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/pet_setup_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -125,6 +126,8 @@ class _MyAppState extends State<MyApp> {
                   return const QuickSetupScreen();
                 case StartRoute.mentorWelcome:
                   return const MentorWelcomeScreen();
+                case StartRoute.petSetup:
+                  return const PetSetupScreen();
                 case StartRoute.login:
                 case null:
                   return const LoginScreen();

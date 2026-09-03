@@ -6,25 +6,34 @@ import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/widgets/onboarding_scaffold.dart';
 
-/// Screen 1 of 2 in the Wallet's mini-onboarding: the Mentor introduces
-/// itself and sets guardrail expectations up front (real data, no execution,
-/// always-cited interpretation) — never a pet-hero/gamification moment like
-/// the Academy's `WelcomeScreen`, per "Mentor mais discreto".
+/// The second-to-last screen in the Wallet's mini-onboarding: the Mentor
+/// introduces itself and sets guardrail expectations up front (real data, no
+/// execution, always-cited interpretation) — never a pet-hero/gamification
+/// moment like the Academy's `WelcomeScreen`, per "Mentor mais discreto".
+///
+/// [totalSteps] is 2 for the common case (account already has a Pet) or 3
+/// when [PetSetupScreen] ran first (a Wallet-first signup with no Pet yet) —
+/// this screen is always its second-to-last step, so its own step number is
+/// `totalSteps - 1`, and it forwards [totalSteps] on to [QuickSetupScreen].
 class MentorWelcomeScreen extends StatelessWidget {
-  const MentorWelcomeScreen({super.key});
+  const MentorWelcomeScreen({super.key, this.totalSteps = 2});
+
+  final int totalSteps;
 
   Future<void> _goNext(BuildContext context) async {
     await DI.onboardingStateRepository.markMentorWelcomeSeen();
     if (context.mounted) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QuickSetupScreen()));
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => QuickSetupScreen(totalSteps: totalSteps)),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return OnboardingScaffold(
-      step: 1,
-      totalSteps: 2,
+      step: totalSteps - 1,
+      totalSteps: totalSteps,
       title: '',
       ctaLabel: Translator.translate(AppStrings.mentorWelcomeCta),
       onCta: () => _goNext(context),
