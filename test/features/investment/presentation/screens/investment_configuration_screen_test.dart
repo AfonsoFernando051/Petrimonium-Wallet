@@ -16,6 +16,8 @@ import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart
 import 'package:petrimonium/features/portfolio/data/repositories/achievements_local_repository.dart';
 import 'package:petrimonium/features/portfolio/data/repositories/portfolio_repository.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
+import 'package:petrimonium/features/portfolio/domain/entities/investment_lot.dart';
+import 'package:petrimonium/features/investment/data/models/investment_type_enum.dart';
 
 class MockInvestmentRepository extends Mock implements InvestmentRepository {}
 
@@ -219,6 +221,107 @@ void main() {
 
       expect(find.byType(AddedAssetTile), findsNothing);
       expect(find.text('Adicione um ativo para continuar'), findsOneWidget);
+    });
+
+    // Regression: `POST /configure` REPLACES the whole portfolio, so the screen
+    // seeds `_assets` with the user's existing lots first. When that seeding
+    // fails, an empty `_assets` is indistinguishable from "user has no
+    // holdings" — submitting from there used to delete the real portfolio
+    // silently. These three tests pin the guard that now prevents it.
+    group('destructive-submit guard when existing holdings fail to load', () {
+      testWidgets('blocks Confirm and shows a retry banner instead of submitting', (WidgetTester tester) async {
+        when(() => mockPortfolioRepository.fetchHoldings()).thenThrow(Exception('network down'));
+
+        await tester.pumpWidget(buildTestableWidget());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Não foi possível carregar sua carteira atual'), findsOneWidget);
+        expect(find.text('Tentar novamente'), findsOneWidget);
+
+        // Add a valid asset — the list is no longer empty, which is exactly the
+        // state that used to let a destructive submit through.
+        await tapVisible(tester, find.text('Ações'));
+        await fillCommonFields(tester);
+        await tapVisible(tester, addAssetButton());
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byType(AddedAssetTile), findsOneWidget);
+
+        final confirmButton = tester.widget<GameButton>(
+          find.byWidgetPredicate((w) => w is GameButton && (w.label?.contains('Continuar') ?? false)),
+        );
+        expect(confirmButton.onPressed, isNull, reason: 'Confirm must stay disabled while the current portfolio is unknown');
+
+        verifyNever(() => mockInvestmentRepository.configureInvestments(any()));
+      });
+
+      testWidgets('a successful retry seeds the existing lots and re-enables Confirm', (WidgetTester tester) async {
+        var call = 0;
+        when(() => mockPortfolioRepository.fetchHoldings()).thenAnswer((_) async {
+          call++;
+          if (call == 1) throw Exception('network down');
+          return [
+            Holding(
+              ticker: 'VALE3',
+              type: InvestmentTypeEnum.STOCKS,
+              quantity: 100,
+              averagePrice: 60,
+              currentPrice: 70,
+              investedValue: 6000,
+              currentValue: 7000,
+              portfolioPercent: 100,
+              lots: [
+                InvestmentLot(
+                  id: 1,
+                  ticker: 'VALE3',
+                  type: InvestmentTypeEnum.STOCKS,
+                  quantity: 100,
+                  purchasePrice: 60,
+                  purchaseDate: DateTime(2025, 1, 10),
+                  currentPrice: 70,
+                  investedValue: 6000,
+                  currentValue: 7000,
+                ),
+              ],
+            ),
+          ];
+        });
+
+        await tester.pumpWidget(buildTestableWidget());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('Não foi possível carregar sua carteira atual'), findsOneWidget);
+
+        await tapVisible(tester, find.text('Tentar novamente'));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Não foi possível carregar sua carteira atual'), findsNothing);
+        expect(find.byType(AddedAssetTile), findsOneWidget, reason: 'the existing VALE3 lot must be seeded');
+
+        final confirmButton = tester.widget<GameButton>(
+          find.byWidgetPredicate((w) => w is GameButton && (w.label?.contains('Continuar') ?? false)),
+        );
+        expect(confirmButton.onPressed, isNotNull);
+      });
+
+      testWidgets('no banner and Confirm works normally when holdings load successfully', (WidgetTester tester) async {
+        // fetchHoldings already stubbed to an empty list in setUp.
+        await tester.pumpWidget(buildTestableWidget());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Não foi possível carregar sua carteira atual'), findsNothing);
+
+        await tapVisible(tester, find.text('Ações'));
+        await fillCommonFields(tester);
+        await tapVisible(tester, addAssetButton());
+        await tester.pump(const Duration(milliseconds: 300));
+
+        final confirmButton = tester.widget<GameButton>(
+          find.byWidgetPredicate((w) => w is GameButton && (w.label?.contains('Continuar') ?? false)),
+        );
+        expect(confirmButton.onPressed, isNotNull);
+      });
     });
 
     testWidgets('tapping Confirm with assets calls configureInvestments and shows a friendly error on failure, without navigating away', (WidgetTester tester) async {

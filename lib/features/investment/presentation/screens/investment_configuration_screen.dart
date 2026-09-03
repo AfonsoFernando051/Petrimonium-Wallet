@@ -28,6 +28,16 @@ import 'package:petrimonium/features/investment/presentation/widgets/unlockable_
 import 'package:petrimonium/features/portfolio/domain/entities/portfolio_stats.dart';
 import 'package:petrimonium/core/widgets/glass_card.dart';
 
+/// Whether the user's existing holdings have been loaded into `_assets` yet.
+///
+/// This matters far more than a normal loading flag: `POST /configure`
+/// *replaces* the whole portfolio, so confirming while the seeding is
+/// unresolved would submit a partial list and delete everything the seeding
+/// failed to load. Only [loaded] is safe to submit from — [failed] must block
+/// the confirm rather than fall through to an empty-start form, because a
+/// failure means we do not know whether the user already had holdings.
+enum _HoldingsSeedState { loading, loaded, failed }
+
 class InvestmentConfigurationScreen extends StatefulWidget {
   const InvestmentConfigurationScreen({super.key});
 
@@ -38,6 +48,15 @@ class InvestmentConfigurationScreen extends StatefulWidget {
 class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationScreen> {
   final List<AssetRegistrationModel> _assets = [];
   bool _isLoading = false;
+
+  /// See [_HoldingsSeedState] — gates `_handleConfirm` against destructive
+  /// submits.
+  _HoldingsSeedState _seedState = _HoldingsSeedState.loading;
+
+  /// Whether existing lots have already been inserted into [_assets]. Kept
+  /// separate from [_seedState] because the retry resets that back to
+  /// `loading`, so it can't tell "never seeded" from "seeding again".
+  bool _hasSeededExisting = false;
 
   /// Index being edited (see `_editAsset`) — when set, the next successful
   /// `_addAsset` re-inserts at this position instead of appending, so
@@ -83,9 +102,16 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
   /// portfolio" call, not an append. This screen is also opened from the
   /// Portfolio tab's "Investir" action for users who already have holdings,
   /// so without this seeding, adding one new asset there would submit only
-  /// that asset and wipe every existing investment. Loading is best-effort:
-  /// a failure here just leaves this a normal empty-start onboarding form.
+  /// that asset and wipe every existing investment.
+  ///
+  /// A failure here is therefore NOT recoverable by falling through to an
+  /// empty-start form: an empty `_assets` after a failed load is
+  /// indistinguishable from "this user genuinely has no holdings", and
+  /// submitting from that state is what deletes a real portfolio. So the
+  /// failure is recorded in [_seedState] and `_handleConfirm` refuses to
+  /// submit until a retry succeeds — see [_HoldingsSeedState].
   Future<void> _seedExistingHoldings() async {
+    if (mounted) setState(() => _seedState = _HoldingsSeedState.loading);
     try {
       final holdings = await DI.portfolioRepository.fetchHoldings();
       final existing = holdings
@@ -98,11 +124,20 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
                 type: lot.type,
               ))
           .toList();
-      if (mounted && existing.isNotEmpty) {
-        setState(() => _assets.insertAll(0, existing));
-      }
+      if (!mounted) return;
+      setState(() {
+        // Insert only once. Today a retry is only reachable from the failure
+        // banner (so nothing was inserted yet), but that is a property of the
+        // UI, not of this method — guard it here so a future caller can't
+        // duplicate every lot the user is already looking at.
+        if (existing.isNotEmpty && !_hasSeededExisting) {
+          _assets.insertAll(0, existing);
+          _hasSeededExisting = true;
+        }
+        _seedState = _HoldingsSeedState.loaded;
+      });
     } catch (_) {
-      // Best-effort — see doc comment above.
+      if (mounted) setState(() => _seedState = _HoldingsSeedState.failed);
     }
   }
 
@@ -238,6 +273,17 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
   }
 
   Future<void> _handleConfirm() async {
+    // Refuse to submit while the existing portfolio is unknown — see
+    // [_seedExistingHoldings]. Submitting here would replace whatever the user
+    // already owns with just what's on screen.
+    if (_seedState != _HoldingsSeedState.loaded) {
+      GameSnack.show(
+        context,
+        'Não foi possível carregar sua carteira atual. Tente novamente antes de salvar.',
+        isError: true,
+      );
+      return;
+    }
     if (_assets.isEmpty) {
       GameSnack.show(context, 'Adicione pelo menos um ativo para continuar.', isError: true);
       return;
@@ -255,6 +301,61 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Shown when [_seedExistingHoldings] failed. Deliberately blocking rather
+  /// than dismissible: continuing without knowing the current portfolio is the
+  /// exact path that deletes it.
+  Widget _buildSeedFailureBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: context.colors.error.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: context.colors.error.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.cloud_off_outlined, color: context.colors.error, size: 20),
+          const SizedBox(width: AppSpacing.sm + 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Não foi possível carregar sua carteira atual',
+                  style: AppTextStyles.label.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Salvar agora substituiria seus investimentos pelos desta tela. '
+                  'Tente carregar novamente antes de continuar.',
+                  style: AppTextStyles.label.copyWith(color: context.colors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextButton(
+                  onPressed: _seedState == _HoldingsSeedState.loading ? null : _seedExistingHoldings,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Tentar novamente',
+                    style: TextStyle(color: context.colors.error, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleSkip() async {
@@ -674,14 +775,20 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
               ),
             ),
             const SizedBox(height: 16),
+            if (_seedState == _HoldingsSeedState.failed) _buildSeedFailureBanner(context),
             GameButton(
               label: _confirmLabel,
               icon: _assets.isNotEmpty ? Icons.arrow_forward : null,
               iconTrailing: true,
               isLoading: _isLoading,
-              pulse: _assets.isNotEmpty,
+              pulse: _assets.isNotEmpty && _seedState == _HoldingsSeedState.loaded,
               height: 56,
-              onPressed: _assets.isEmpty ? null : _handleConfirm,
+              // Also disabled while the existing portfolio is unknown — a
+              // submit from that state would delete it. See
+              // [_seedExistingHoldings].
+              onPressed: (_assets.isEmpty || _seedState != _HoldingsSeedState.loaded)
+                  ? null
+                  : _handleConfirm,
             ),
             Center(
               child: TextButton(
