@@ -7,9 +7,18 @@ class InvestmentRemoteDataSource {
 
   InvestmentRemoteDataSource({required this.apiClient});
 
-  Future<void> configureInvestments(List<AssetRegistrationModel> investments) async {
+  /// Replaces the caller's whole portfolio with [investments].
+  ///
+  /// [confirmReplace] maps to the backend's `confirmReplace` query parameter:
+  /// with it `false` (the default) the server refuses a submission that would
+  /// wipe out existing holdings, so a caller that hasn't shown the user their
+  /// current portfolio can't silently destroy it.
+  Future<void> configureInvestments(
+    List<AssetRegistrationModel> investments, {
+    bool confirmReplace = false,
+  }) async {
     final response = await apiClient.post(
-      '/api/investments/configure',
+      '/api/investments/configure?confirmReplace=$confirmReplace',
       investments.map((e) => e.toJson()).toList(),
     );
 

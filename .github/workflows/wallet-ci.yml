@@ -1,23 +1,16 @@
 name: Wallet CI
 
+# This repository *is* the wallet app — its root holds pubspec.yaml — so every
+# path here is repo-root-relative. There is no "Petrimonium-Wallet/"
+# subdirectory to filter on or cd into.
 on:
   push:
     branches: [main]
-    paths:
-      - "Petrimonium-Wallet/**"
-      - ".github/workflows/wallet-ci.yml"
-
   pull_request:
-    paths:
-      - "Petrimonium-Wallet/**"
-      - ".github/workflows/wallet-ci.yml"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Petrimonium-Wallet
     steps:
       - uses: actions/checkout@v4
 
@@ -44,9 +37,6 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Petrimonium-Wallet
     steps:
       - uses: actions/checkout@v4
 

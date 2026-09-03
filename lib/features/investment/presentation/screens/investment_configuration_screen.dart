@@ -39,6 +39,12 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
   final List<AssetRegistrationModel> _assets = [];
   bool _isLoading = false;
 
+  /// Whether the current portfolio failed to load (see [_seedExistingHoldings]).
+  /// While true, Confirm is disabled and a retry banner is shown: submitting
+  /// here REPLACES the whole portfolio, so a submit built on holdings we never
+  /// managed to read would silently delete the user's real investments.
+  bool _holdingsLoadFailed = false;
+
   /// Index being edited (see `_editAsset`) — when set, the next successful
   /// `_addAsset` re-inserts at this position instead of appending, so
   /// editing doesn't reorder the list.
@@ -83,8 +89,12 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
   /// portfolio" call, not an append. This screen is also opened from the
   /// Portfolio tab's "Investir" action for users who already have holdings,
   /// so without this seeding, adding one new asset there would submit only
-  /// that asset and wipe every existing investment. Loading is best-effort:
-  /// a failure here just leaves this a normal empty-start onboarding form.
+  /// that asset and wipe every existing investment.
+  ///
+  /// A failure here is NOT best-effort: if we can't read the current
+  /// portfolio we can't know what a submit would destroy, so
+  /// [_holdingsLoadFailed] blocks Confirm and offers a retry instead of
+  /// quietly degrading into an empty-start form that replaces everything.
   Future<void> _seedExistingHoldings() async {
     try {
       final holdings = await DI.portfolioRepository.fetchHoldings();
@@ -98,11 +108,14 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
                 type: lot.type,
               ))
           .toList();
-      if (mounted && existing.isNotEmpty) {
-        setState(() => _assets.insertAll(0, existing));
+      if (mounted) {
+        setState(() {
+          _holdingsLoadFailed = false;
+          if (existing.isNotEmpty) _assets.insertAll(0, existing);
+        });
       }
     } catch (_) {
-      // Best-effort — see doc comment above.
+      if (mounted) setState(() => _holdingsLoadFailed = true);
     }
   }
 
@@ -245,7 +258,11 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
 
     setState(() => _isLoading = true);
     try {
-      await DI.investmentRepository.configureInvestments(_assets);
+      // confirmReplace: true — Confirm stays disabled until the existing
+      // holdings have loaded and been seeded into _assets, so by the time this
+      // runs the user has seen (and edited) their real portfolio. This submit
+      // is a deliberate replacement, not a blind one.
+      await DI.investmentRepository.configureInvestments(_assets, confirmReplace: true);
       await DI.onboardingStateRepository.markPortfolioConnected();
       if (mounted) _goHome();
     } catch (e) {
@@ -556,6 +573,36 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
     );
   }
 
+  /// Shown when [_seedExistingHoldings] failed. Explains why Confirm is
+  /// disabled and offers the retry, rather than letting the user build a
+  /// submission that would replace a portfolio we never managed to read.
+  Widget _buildHoldingsLoadFailedBanner() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.goldenBorder.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: AppColors.goldenBorder.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off_outlined, color: AppColors.goldenBorder, size: 20),
+          const SizedBox(width: AppSpacing.sm + 2),
+          Expanded(
+            child: Text(
+              'Não foi possível carregar sua carteira atual',
+              style: AppTextStyles.label.copyWith(color: context.colors.textPrimary),
+            ),
+          ),
+          TextButton(
+            onPressed: _seedExistingHoldings,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRightPanel() {
     final stats = _pendingStats;
 
@@ -581,6 +628,13 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     children: [
+                      // Inside the scroll view on purpose: outside it, the
+                      // banner would permanently shorten the form area rather
+                      // than scroll away with the rest of the content.
+                      if (_holdingsLoadFailed) ...[
+                        _buildHoldingsLoadFailedBanner(),
+                        const SizedBox(height: 16),
+                      ],
                       InvestmentTypeSelector(
                         selected: _selectedType,
                         onChanged: (type) => setState(() {
@@ -681,7 +735,9 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
               isLoading: _isLoading,
               pulse: _assets.isNotEmpty,
               height: 56,
-              onPressed: _assets.isEmpty ? null : _handleConfirm,
+              // Disabled while the current portfolio is unknown — see
+              // [_holdingsLoadFailed]. A submit here replaces everything.
+              onPressed: _assets.isEmpty || _holdingsLoadFailed ? null : _handleConfirm,
             ),
             Center(
               child: TextButton(

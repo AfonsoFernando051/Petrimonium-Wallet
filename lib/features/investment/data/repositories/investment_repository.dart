@@ -6,8 +6,11 @@ class InvestmentRepository {
 
   InvestmentRepository({required this.remoteDataSource});
 
-  Future<void> configureInvestments(List<AssetRegistrationModel> investments) async {
-    return await remoteDataSource.configureInvestments(investments);
+  Future<void> configureInvestments(
+    List<AssetRegistrationModel> investments, {
+    bool confirmReplace = false,
+  }) async {
+    return await remoteDataSource.configureInvestments(investments, confirmReplace: confirmReplace);
   }
 
   Future<Map<String, dynamic>?> fetchQuote(String ticker) async {
