@@ -252,7 +252,7 @@ void main() {
         );
         expect(confirmButton.onPressed, isNull, reason: 'Confirm must stay disabled while the current portfolio is unknown');
 
-        verifyNever(() => mockInvestmentRepository.configureInvestments(any()));
+        verifyNever(() => mockInvestmentRepository.configureInvestments(any(), confirmReplace: any(named: 'confirmReplace')));
       });
 
       testWidgets('a successful retry seeds the existing lots and re-enables Confirm', (WidgetTester tester) async {
@@ -325,7 +325,7 @@ void main() {
     });
 
     testWidgets('tapping Confirm with assets calls configureInvestments and shows a friendly error on failure, without navigating away', (WidgetTester tester) async {
-      when(() => mockInvestmentRepository.configureInvestments(any())).thenThrow(Exception('server exploded'));
+      when(() => mockInvestmentRepository.configureInvestments(any(), confirmReplace: any(named: 'confirmReplace'))).thenThrow(Exception('server exploded'));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
@@ -344,7 +344,7 @@ void main() {
       await tapVisible(tester, confirmButton);
       await tester.pump(const Duration(milliseconds: 300));
 
-      verify(() => mockInvestmentRepository.configureInvestments(any())).called(1);
+      verify(() => mockInvestmentRepository.configureInvestments(any(), confirmReplace: true)).called(1);
       expect(find.textContaining('Falha ao salvar investimentos'), findsOneWidget);
       // Still on this screen — the asset tile added earlier is still present.
       expect(find.byType(AddedAssetTile), findsOneWidget);

@@ -27,12 +27,28 @@ void main() {
       type: InvestmentTypeEnum.STOCKS,
     );
 
-    test('posts the serialized investment list and completes on 200', () async {
+    test('posts the serialized investment list unconfirmed by default and completes on 200', () async {
       when(() => mockApiClient.post(any(), any())).thenAnswer((_) async => http.Response('', 200));
 
       await dataSource.configureInvestments([investment]);
 
-      verify(() => mockApiClient.post('/api/investments/configure', [investment.toJson()])).called(1);
+      // Unconfirmed by default: the backend's destructive-replace guard is what
+      // protects a caller that hasn't seen the current portfolio.
+      verify(() => mockApiClient.post(
+            '/api/investments/configure?confirmReplace=false',
+            [investment.toJson()],
+          )).called(1);
+    });
+
+    test('sends confirmReplace=true when the caller acknowledges the replacement', () async {
+      when(() => mockApiClient.post(any(), any())).thenAnswer((_) async => http.Response('', 200));
+
+      await dataSource.configureInvestments([investment], confirmReplace: true);
+
+      verify(() => mockApiClient.post(
+            '/api/investments/configure?confirmReplace=true',
+            [investment.toJson()],
+          )).called(1);
     });
 
     test('throws an Exception on a non-200 response', () async {

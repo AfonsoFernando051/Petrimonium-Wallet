@@ -291,7 +291,10 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
 
     setState(() => _isLoading = true);
     try {
-      await DI.investmentRepository.configureInvestments(_assets);
+      // Safe to confirm: the guard above guarantees `_seedState` is `loaded`,
+      // so `_assets` reflects the portfolio the user actually has plus their
+      // edits — not a partial list from a failed load.
+      await DI.investmentRepository.configureInvestments(_assets, confirmReplace: true);
       await DI.onboardingStateRepository.markPortfolioConnected();
       if (mounted) _goHome();
     } catch (e) {

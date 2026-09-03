@@ -31,15 +31,15 @@ void main() {
           type: InvestmentTypeEnum.STOCKS,
         ),
       ];
-      when(() => mockDataSource.configureInvestments(any())).thenAnswer((_) async {});
+      when(() => mockDataSource.configureInvestments(any(), confirmReplace: any(named: 'confirmReplace'))).thenAnswer((_) async {});
 
       await repository.configureInvestments(assets);
 
-      verify(() => mockDataSource.configureInvestments(assets)).called(1);
+      verify(() => mockDataSource.configureInvestments(assets, confirmReplace: false)).called(1);
     });
 
     test('propagates a failure', () async {
-      when(() => mockDataSource.configureInvestments(any())).thenThrow(Exception('save failed'));
+      when(() => mockDataSource.configureInvestments(any(), confirmReplace: any(named: 'confirmReplace'))).thenThrow(Exception('save failed'));
       expect(() => repository.configureInvestments([]), throwsException);
     });
   });

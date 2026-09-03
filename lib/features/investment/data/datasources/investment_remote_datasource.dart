@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:petrimonium/core/network/api_client.dart';
+import 'package:petrimonium/core/network/api_error_parser.dart';
 import 'package:petrimonium/features/investment/data/models/asset_registration_model.dart';
 
 class InvestmentRemoteDataSource {
@@ -7,14 +8,23 @@ class InvestmentRemoteDataSource {
 
   InvestmentRemoteDataSource({required this.apiClient});
 
-  Future<void> configureInvestments(List<AssetRegistrationModel> investments) async {
+  /// [confirmReplace] tells the backend the caller knows this call *replaces*
+  /// the whole portfolio and has seen what it is replacing. The backend
+  /// rejects an unconfirmed submission that would end up with fewer lots than
+  /// the user holds (409 `PORTFOLIO_REPLACE_NOT_CONFIRMED`), which is what
+  /// protects app versions predating this flag from wiping a portfolio after a
+  /// failed load — see `InvestmentConfigurationScreen`.
+  Future<void> configureInvestments(
+    List<AssetRegistrationModel> investments, {
+    bool confirmReplace = false,
+  }) async {
     final response = await apiClient.post(
-      '/api/investments/configure',
+      '/api/investments/configure?confirmReplace=$confirmReplace',
       investments.map((e) => e.toJson()).toList(),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to configure investments');
+      throw Exception(extractErrorDetail(response, fallback: 'Failed to configure investments'));
     }
   }
 
