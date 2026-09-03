@@ -1,15 +1,16 @@
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/features/auth/data/repositories/auth_repository.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_state_repository.dart';
-import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
 import 'package:petrimonium/features/pet/domain/repositories/mascot_repository.dart';
 import 'package:petrimonium/features/pet/domain/repositories/pet_repository.dart';
 
 /// Where `MyApp` should route the user on cold start.
-enum StartRoute { login, mentorWelcome, quickSetup, home }
+enum StartRoute { login, petSetup, mentorWelcome, quickSetup, home }
 
-/// A default pet gets silently provisioned for a Wallet-first signup (see
-/// [StartRouteResolver._ensureDefaultPet]) — one of the same suggestions
+/// A pet that already exists server-side (e.g. from the Academy) but has no
+/// name cached on this device yet — first login on a new device — falls
+/// back to this name rather than being sent to [StartRoute.petSetup] (see
+/// [StartRouteResolver._ensureLocalPetName]): one of the same suggestions
 /// `PetNameField` offers during Academy's pet-naming step, so it never reads
 /// as an obviously-synthetic placeholder if the user later sees it.
 const String kDefaultWalletPetName = 'Nino';
@@ -20,20 +21,22 @@ const String kDefaultWalletPetName = 'Nino';
 ///
 /// Each step gates the next one:
 /// not authenticated -> [StartRoute.login]
-/// authenticated, mentor welcome not seen yet -> [StartRoute.mentorWelcome]
+/// authenticated, no Pet on the account yet -> [StartRoute.petSetup]
+/// has a Pet, mentor welcome not seen yet -> [StartRoute.mentorWelcome]
 /// welcome seen, quick setup (market/currency) not done -> [StartRoute.quickSetup]
 /// everything resolved -> [StartRoute.home]
 ///
-/// Wallet's mini-onboarding is deliberately just these 2 screens — per the
-/// design, a returning Academy user already has a pet ("mesma conta
-/// Petrimonium da Academy"), and a Wallet-first signup gets one silently
-/// provisioned (see [_ensureDefaultPet]) rather than shown a chooser: the
-/// pet is a shared cross-app companion, not something Wallet itself is
-/// asking the user to configure. The old pet-naming/financial-goal/tutorial/
-/// portfolio-choice steps (and their screens) are unreachable from cold
-/// start now but not deleted — same "deferred cleanup" pattern as the rest
-/// of the Wallet/Academy split — until it's decided whether any of them
-/// resurface elsewhere (e.g. a "change goal" Profile setting).
+/// A returning Academy user already has a Pet ("mesma conta Petrimonium da
+/// Academy") and skips [StartRoute.petSetup] entirely — the pet is a shared
+/// cross-app companion, so an existing one is never re-configured, only a
+/// missing local name gets backfilled (see [_ensureLocalPetName]). A
+/// Wallet-first signup with no Pet at all is routed to [StartRoute.petSetup]
+/// to choose a species and name it, via `PetSetupScreen`. The old
+/// pet-naming/financial-goal/tutorial/portfolio-choice steps (and their
+/// screens) are unreachable from cold start now but not deleted — same
+/// "deferred cleanup" pattern as the rest of the Wallet/Academy split —
+/// until it's decided whether any of them resurface elsewhere (e.g. a
+/// "change goal" Profile setting).
 class StartRouteResolver {
   StartRouteResolver({
     AuthRepository? authRepository,
@@ -55,7 +58,10 @@ class StartRouteResolver {
     if (!loggedIn) return StartRoute.login;
 
     try {
-      await _ensureDefaultPet();
+      final hasPet = await _petRepository.getPetStatus();
+      if (!hasPet) return StartRoute.petSetup;
+
+      await _ensureLocalPetName();
 
       final seenMentorWelcome = await _onboardingStateRepository.hasSeenMentorWelcome();
       if (!seenMentorWelcome) return StartRoute.mentorWelcome;
@@ -73,15 +79,9 @@ class StartRouteResolver {
     }
   }
 
-  Future<void> _ensureDefaultPet() async {
-    final hasPet = await _petRepository.getPetStatus();
+  Future<void> _ensureLocalPetName() async {
     final profile = await _mascotRepository.loadProfile();
     final hasName = profile.name != null && profile.name!.trim().isNotEmpty;
-    if (hasPet && hasName) return;
-
-    if (!hasPet) {
-      await _petRepository.configurePet(PetSpecieEnum.DOG);
-    }
     if (!hasName) {
       await _mascotRepository.saveName(kDefaultWalletPetName);
     }

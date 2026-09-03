@@ -15,6 +15,7 @@ import 'package:petrimonium/features/game/data/repositories/gamification_reposit
 import 'package:petrimonium/features/game/domain/entities/gamification_summary.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_state_repository.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/mentor_welcome_screen.dart';
+import 'package:petrimonium/features/onboarding/presentation/screens/pet_setup_screen.dart';
 import 'package:petrimonium/features/onboarding/presentation/screens/quick_setup_screen.dart';
 import 'package:petrimonium/features/pet/data/models/pet_specie_enum.dart';
 import 'package:petrimonium/features/pet/domain/entities/pet_profile.dart';
@@ -182,6 +183,23 @@ void main() {
       await tester.pump();
 
       expect(find.byType(LoginScreen), findsOneWidget);
+    });
+
+    testWidgets('routes to PetSetupScreen when the account has no pet yet', (tester) async {
+      final authRepository = MockAuthRepository();
+      when(() => authRepository.isLoggedIn()).thenAnswer((_) async => true);
+      DI.authRepository = authRepository;
+
+      final petRepository = MockPetRepository();
+      when(() => petRepository.getPetStatus()).thenAnswer((_) async => false);
+      DI.petRepository = petRepository;
+
+      await tester.pumpWidget(buildTestable());
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(PetSetupScreen), findsOneWidget);
     });
 
     testWidgets("routes to MentorWelcomeScreen when the mentor welcome hasn't been seen yet", (tester) async {

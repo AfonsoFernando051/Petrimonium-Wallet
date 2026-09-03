@@ -13,7 +13,26 @@ class AppStrings {
   static const String brandTitle = "brandTitle";
   static const String sharedAccountNotice = "sharedAccountNotice";
 
-  // Mini onboarding (2 screens): Mentor welcome card + quick setup.
+  // Wallet-first signup pet setup (only step 1 when the account has no Pet
+  // yet — see StartRouteResolver): species picker + name field.
+  static const String petSetupTitle = "petSetupTitle";
+  static const String petSetupSubtitle = "petSetupSubtitle";
+  static const String petSetupSpeciesLabel = "petSetupSpeciesLabel";
+  static const String petSetupNameLabel = "petSetupNameLabel";
+  static const String petSetupNameHint = "petSetupNameHint";
+  static const String petSetupFooterNote = "petSetupFooterNote";
+  static const String petSetupCta = "petSetupCta";
+  static const String petSetupFailedSnack = "petSetupFailedSnack";
+  static const String petSpecieDog = "petSpecieDog";
+  static const String petSpecieCat = "petSpecieCat";
+  static const String petSpecieWolf = "petSpecieWolf";
+  static const String petSpecieFox = "petSpecieFox";
+  static const String petSpecieBear = "petSpecieBear";
+  static const String petSpecieLion = "petSpecieLion";
+  static const String petSpecieOwl = "petSpecieOwl";
+
+  // Mini onboarding (2 or 3 screens): optional pet setup + Mentor welcome
+  // card + quick setup.
   static const String mentorWelcomeHeadline = "mentorWelcomeHeadline";
   static const String mentorWelcomeParagraph1 = "mentorWelcomeParagraph1";
   static const String mentorWelcomeParagraph2 = "mentorWelcomeParagraph2";
