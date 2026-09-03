@@ -59,6 +59,10 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Mesma conta Petrimonium da Academy. Se você já estudou por lá, seu Pet e suas preferências vêm junto.",
+      AppStrings.signupSharedAccountNotice:
+          "Sua conta Petrimonium é única para Academy e Wallet. No próximo passo você cria seu Pet.",
+      AppStrings.authTabLoginLabel: "Login",
+      AppStrings.authTabSignupLabel: "Cadastro",
       AppStrings.petSetupTitle: "Crie seu Pet",
       AppStrings.petSetupSubtitle:
           "Não encontramos um Pet Petrimonium na sua conta. Ele é a mesma identidade na Academy e na Wallet — crie o seu agora.",
@@ -134,12 +138,9 @@ class Translator {
       AppStrings.quickSetupSettingsSubtitle: "Você pode ajustar isso quando quiser.",
       AppStrings.quickSetupSaveCta: "Salvar",
       AppStrings.quickSetupSavedSnack: "Preferências salvas",
-      AppStrings.createAccount: "Criar Conta",
-      AppStrings.fillDetails: "Preencha seus dados",
       AppStrings.nameHint: "Nome Completo",
       AppStrings.confirmPasswordHint: "Confirmar Senha",
       AppStrings.signupButton: "Cadastrar",
-      AppStrings.alreadyHaveAccount: "Já tem conta? Entrar",
 
       AppStrings.pleaseAnswerAllQuestions: "Responda todas as perguntas",
       AppStrings.onboardingFailed: "Falha ao enviar respostas",
@@ -742,6 +743,10 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Same Petrimonium account as the Academy. If you've already studied there, your Pet and preferences carry over.",
+      AppStrings.signupSharedAccountNotice:
+          "Your Petrimonium account is shared between the Academy and the Wallet. In the next step you'll create your Pet.",
+      AppStrings.authTabLoginLabel: "Login",
+      AppStrings.authTabSignupLabel: "Sign Up",
       AppStrings.petSetupTitle: "Create your Pet",
       AppStrings.petSetupSubtitle:
           "We couldn't find a Petrimonium Pet on your account. It's the same identity across the Academy and the Wallet — create yours now.",
@@ -817,12 +822,9 @@ class Translator {
       AppStrings.quickSetupSettingsSubtitle: "You can adjust this whenever you want.",
       AppStrings.quickSetupSaveCta: "Save",
       AppStrings.quickSetupSavedSnack: "Preferences saved",
-      AppStrings.createAccount: "Create Account",
-      AppStrings.fillDetails: "Fill in your details",
       AppStrings.nameHint: "Full Name",
       AppStrings.confirmPasswordHint: "Confirm Password",
       AppStrings.signupButton: "Sign Up",
-      AppStrings.alreadyHaveAccount: "Already have an account? Login",
 
       AppStrings.pleaseAnswerAllQuestions: "Please answer all questions",
       AppStrings.onboardingFailed: "Failed to submit answers",
@@ -1418,6 +1420,10 @@ class Translator {
       AppStrings.brandTitle: "Petrimonium Wallet",
       AppStrings.sharedAccountNotice:
           "Misma cuenta Petrimonium que la Academy. Si ya estudiaste allí, tu Pet y tus preferencias vienen junto.",
+      AppStrings.signupSharedAccountNotice:
+          "Tu cuenta Petrimonium es única para la Academy y la Wallet. En el próximo paso crearás tu Pet.",
+      AppStrings.authTabLoginLabel: "Login",
+      AppStrings.authTabSignupLabel: "Registrarse",
       AppStrings.petSetupTitle: "Crea tu Pet",
       AppStrings.petSetupSubtitle:
           "No encontramos un Pet de Petrimonium en tu cuenta. Es la misma identidad en la Academy y en la Wallet — crea el tuyo ahora.",
@@ -1493,12 +1499,9 @@ class Translator {
       AppStrings.quickSetupSettingsSubtitle: "Puedes ajustar esto cuando quieras.",
       AppStrings.quickSetupSaveCta: "Guardar",
       AppStrings.quickSetupSavedSnack: "Preferencias guardadas",
-      AppStrings.createAccount: "Crear Cuenta",
-      AppStrings.fillDetails: "Completa tus datos",
       AppStrings.nameHint: "Nombre Completo",
       AppStrings.confirmPasswordHint: "Confirmar Contraseña",
       AppStrings.signupButton: "Registrarse",
-      AppStrings.alreadyHaveAccount: "¿Ya tienes cuenta? Entrar",
 
       AppStrings.pleaseAnswerAllQuestions: "Responde todas las preguntas",
       AppStrings.onboardingFailed: "Error al enviar las respuestas",

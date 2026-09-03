@@ -12,6 +12,13 @@ class AppStrings {
   static const String orDivider = "orDivider";
   static const String brandTitle = "brandTitle";
   static const String sharedAccountNotice = "sharedAccountNotice";
+  static const String signupSharedAccountNotice = "signupSharedAccountNotice";
+
+  // The Login/Cadastro segmented control shared by LoginCard's LoginForm and
+  // SignupForm — a single auth screen, not a separate signup modal, per the
+  // Wallet design's tabs.
+  static const String authTabLoginLabel = "authTabLoginLabel";
+  static const String authTabSignupLabel = "authTabSignupLabel";
 
   // Wallet-first signup pet setup (only step 1 when the account has no Pet
   // yet — see StartRouteResolver): species picker + name field.
@@ -93,12 +100,9 @@ class AppStrings {
   static const String quickSetupSavedSnack = "quickSetupSavedSnack";
 
   // Signup
-  static const String createAccount = "createAccount";
-  static const String fillDetails = "fillDetails";
   static const String nameHint = "nameHint";
   static const String confirmPasswordHint = "confirmPasswordHint";
   static const String signupButton = "signupButton";
-  static const String alreadyHaveAccount = "alreadyHaveAccount";
 
   // Forgot / reset password
   static const String forgotPasswordTitle = "forgotPasswordTitle";

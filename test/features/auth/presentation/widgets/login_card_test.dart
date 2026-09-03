@@ -7,6 +7,7 @@ import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/features/auth/data/repositories/auth_repository.dart';
 import 'package:petrimonium/features/auth/presentation/widgets/login_card.dart';
 import 'package:petrimonium/features/auth/presentation/widgets/login_form.dart';
+import 'package:petrimonium/features/auth/presentation/widgets/signup_form.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_repository.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -30,12 +31,31 @@ void main() {
   }
 
   group('LoginCard', () {
-    testWidgets('renders the fox mascot, brand title and LoginForm', (tester) async {
+    testWidgets('renders the fox mascot, brand title, the Login/Cadastro toggle and LoginForm by default', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
 
       expect(find.byType(Image), findsOneWidget);
       expect(find.text('PETRIMONIUM WALLET'), findsOneWidget);
+      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('Cadastro'), findsOneWidget);
       expect(find.byType(LoginForm), findsOneWidget);
+      expect(find.byType(SignupForm), findsNothing);
+    });
+
+    testWidgets('tapping Cadastro swaps in SignupForm; tapping Login swaps back', (tester) async {
+      await tester.pumpWidget(buildTestableWidget());
+
+      await tester.tap(find.text('Cadastro'));
+      await tester.pump();
+
+      expect(find.byType(SignupForm), findsOneWidget);
+      expect(find.byType(LoginForm), findsNothing);
+
+      await tester.tap(find.text('Login'));
+      await tester.pump();
+
+      expect(find.byType(LoginForm), findsOneWidget);
+      expect(find.byType(SignupForm), findsNothing);
     });
   });
 }

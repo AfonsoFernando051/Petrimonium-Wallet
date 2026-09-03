@@ -52,15 +52,18 @@ void main() {
       .at(index);
 
   group('SignupForm', () {
-    testWidgets('renders headline and all four fields', (tester) async {
+    testWidgets('renders all four fields, the shared-account notice, and CTAs', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
 
-      expect(find.text('Criar Conta'), findsOneWidget);
-      expect(find.text('Preencha seus dados'), findsOneWidget);
       expect(find.byType(CustomTextField), findsNWidgets(4));
+      expect(
+        find.text(
+          'Sua conta Petrimonium é única para Academy e Wallet. No próximo passo você cria seu Pet.',
+        ),
+        findsOneWidget,
+      );
       expect(find.byType(SignupActionButton), findsOneWidget);
       expect(find.byType(GoogleSignInButton), findsOneWidget);
-      expect(find.text('Já tem conta? Entrar'), findsOneWidget);
     });
 
     testWidgets('shows a live name error once at least one char is typed but under minimum', (tester) async {

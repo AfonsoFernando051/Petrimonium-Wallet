@@ -69,7 +69,12 @@ void main() {
 
       expect(find.text('Email or Username'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Login'), findsOneWidget);
+      // 'Login' now appears twice in English: the Login/Sign Up toggle tab
+      // and the LoginButton's own CTA label — assert the CTA specifically.
+      expect(
+        find.descendant(of: find.byType(LoginButton), matching: find.text('Login')),
+        findsOneWidget,
+      );
 
       expect(find.text('E-mail ou Usuário'), findsNothing);
     });

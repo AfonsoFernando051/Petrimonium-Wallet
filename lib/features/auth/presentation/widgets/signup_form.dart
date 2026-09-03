@@ -9,7 +9,6 @@ import '../../../../core/di/dependency_injection.dart';
 import '../../../../main.dart';
 import 'custom_text_field.dart';
 import 'signup_action_button.dart';
-import 'already_have_account_button.dart';
 import 'google_signin_button.dart';
 import 'or_divider.dart';
 
@@ -158,26 +157,9 @@ class _SignupFormState extends State<SignupForm> {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.colors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.person_add, size: 64, color: tokens.textPrimary),
-        const SizedBox(height: 16),
-        Text(
-          Translator.translate(AppStrings.createAccount),
-          style: TextStyle(
-            color: tokens.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          Translator.translate(AppStrings.fillDetails),
-          style: TextStyle(color: tokens.textSecondary),
-        ),
-        const SizedBox(height: 24),
         CustomTextField(
           hint: Translator.translate(AppStrings.nameHint),
           icon: Icons.person,
@@ -210,7 +192,9 @@ class _SignupFormState extends State<SignupForm> {
           controller: _confirmPasswordController,
           errorText: _confirmPasswordError,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        _SharedAccountNotice(text: Translator.translate(AppStrings.signupSharedAccountNotice)),
+        const SizedBox(height: 20),
         SignupActionButton(
           onPressed: _handleRegister,
           isLoading: _isLoading,
@@ -222,9 +206,35 @@ class _SignupFormState extends State<SignupForm> {
           onPressed: _handleGoogleSignup,
           isLoading: _isGoogleLoading,
         ),
-        const SizedBox(height: 16),
-        const AlreadyHaveAccountButton(),
       ],
+    );
+  }
+}
+
+/// Explains up front that Cadastro creates one account shared with the
+/// Academy (a Pet gets created for it in the next onboarding step) — the
+/// signup-mode counterpart to [LoginForm]'s notice of the same shape, per
+/// the Wallet design's `loginNoteText`.
+class _SharedAccountNotice extends StatelessWidget {
+  final String text;
+
+  const _SharedAccountNotice({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: tokens.surfaceMuted,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: tokens.textSecondary, fontSize: 12, height: 1.4),
+      ),
     );
   }
 }

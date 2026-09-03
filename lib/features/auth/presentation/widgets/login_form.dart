@@ -11,7 +11,6 @@ import 'forgot_password_button.dart';
 import 'google_signin_button.dart';
 import 'login_button.dart';
 import 'or_divider.dart';
-import 'signup_button.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -125,8 +124,6 @@ class _LoginFormState extends State<LoginForm> {
         ),
         const SizedBox(height: 24),
         const ForgotPasswordButton(),
-        const SizedBox(height: 16),
-        const SignupButton(),
       ],
     );
   }

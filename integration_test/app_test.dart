@@ -15,7 +15,6 @@ import 'package:petrimonium/features/auth/presentation/screens/login_screen.dart
 import 'package:petrimonium/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:petrimonium/features/auth/presentation/widgets/login_button.dart';
 import 'package:petrimonium/features/auth/presentation/widgets/signup_action_button.dart';
-import 'package:petrimonium/features/auth/presentation/widgets/signup_button.dart';
 import 'package:petrimonium/features/auth/presentation/widgets/signup_form.dart';
 import 'package:petrimonium/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:petrimonium/features/mentor/data/repositories/mentor_chat_repository.dart';
@@ -312,9 +311,10 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      await tester.ensureVisible(find.byType(SignupButton));
-      await tester.tap(find.byType(SignupButton));
-      await tester.pump(const Duration(milliseconds: 300));
+      // Cadastro lives on the same screen as Login now, switched by the
+      // segmented toggle — not a separate modal reached via a text link.
+      await tester.tap(find.text(Translator.translate(AppStrings.authTabSignupLabel)));
+      await tester.pump();
       expect(find.byType(SignupForm), findsOneWidget);
 
       final fields = find.descendant(

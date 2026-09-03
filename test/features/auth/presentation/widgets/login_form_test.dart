@@ -53,7 +53,7 @@ void main() {
       .last;
 
   group('LoginForm', () {
-    testWidgets('renders the shared-account notice, both fields, LoginButton, ForgotPasswordButton and SignupButton', (tester) async {
+    testWidgets('renders the shared-account notice, both fields, LoginButton and ForgotPasswordButton', (tester) async {
       await tester.pumpWidget(buildTestableWidget());
 
       expect(
@@ -66,16 +66,6 @@ void main() {
       expect(find.byType(LoginButton), findsOneWidget);
       expect(find.byType(GoogleSignInButton), findsOneWidget);
       expect(find.text('Esqueceu a senha?'), findsOneWidget);
-      // SignupButton's prompt is a RichText with two TextSpans, not a
-      // single Text — find.text() only matches Text/Text.rich widgets, and
-      // byType(RichText) alone is ambiguous since every plain Text also
-      // renders via its own internal RichText.
-      expect(
-        find.byWidgetPredicate(
-          (widget) => widget is RichText && widget.text.toPlainText() == 'Não tem conta? Cadastre-se',
-        ),
-        findsOneWidget,
-      );
     });
 
     testWidgets('shows error snackbar and does not call login when fields are empty', (tester) async {
