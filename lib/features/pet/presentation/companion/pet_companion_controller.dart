@@ -98,32 +98,7 @@ class PetCompanionController extends ChangeNotifier {
   }
 
   void _onAppEvent(AppEvent event) {
-    final message = switch (event) {
-      LessonCompletedEvent(:final lessonId) =>
-        PetMessageCatalog.lessonCompleted(lessonId),
-      XpGainedEvent(:final amount) => PetMessageCatalog.xpGained(amount),
-      UserLeveledUpEvent(:final newLevel) => PetMessageCatalog.levelUp(
-        newLevel,
-      ),
-      AchievementUnlockedEvent(:final achievement) =>
-        PetMessageCatalog.achievementUnlocked(achievement.title),
-      PetEvolvedEvent(:final newStage) => PetMessageCatalog.evolved(newStage),
-      DifficultyDetectedEvent(:final schoolTitle) =>
-        PetMessageCatalog.difficultyDetected(schoolTitle),
-      SchoolMasteredEvent(:final schoolTitle) =>
-        PetMessageCatalog.schoolMastered(schoolTitle),
-      FirstInvestmentAddedEvent() => PetMessageCatalog.firstInvestment(),
-      HighConcentrationDetectedEvent(:final ticker, :final percent) =>
-        PetMessageCatalog.highConcentration(ticker, percent),
-      MissionCompletedEvent(:final missionTitle) =>
-        PetMessageCatalog.missionCompleted(missionTitle),
-      FinancialLabSimulatorCompletedEvent(:final simulatorTitle) =>
-        PetMessageCatalog.labSimulatorCompleted(simulatorTitle),
-      // A session expiring is a plumbing concern (see ApiClient/main.dart's
-      // root listener, which handles the actual logout-and-redirect) — not
-      // a moment the companion should comment on.
-      SessionExpiredEvent() => null,
-    };
+    final message = PetMessageCatalog.forEvent(event);
     if (message == null) return;
     _offer(message, bypassCooldown: true);
   }
