@@ -1,3 +1,4 @@
+import 'package:petrimonium/core/events/app_event.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/features/game/domain/services/level_calculator.dart';
 import 'package:petrimonium/features/game/domain/services/level_title.dart';
@@ -257,7 +258,10 @@ class PetMessageCatalog {
       trigger: PetMessageTrigger.pageEnter,
       textKey: AppStrings.companionPortfolioDiversified,
       params: {'count': '$count'},
-      mood: PetAnimationState.happy,
+      // `happy` is a celebratory mood too, and a diversified portfolio is a
+      // financial state — the text is already purely factual, so the mood
+      // follows it.
+      mood: PetAnimationState.idle,
     );
   }
 
@@ -396,6 +400,37 @@ class PetMessageCatalog {
   /// into learning, not just a celebration: no specific ticker/type is named
   /// since the backend `/configure` call may add several at once and this
   /// catalog never fabricates which one is "the" first.
+  /// The single mapping from an [AppEvent] to the message the companion offers
+  /// for it, or `null` when the companion should stay quiet.
+  ///
+  /// Public and pure so the PRD guardrail can be tested rather than trusted:
+  /// a test walks every event with [AppEvent.isFinancial] set and fails if any
+  /// of them maps to a celebratory mood. While this lived as a private switch
+  /// inside `PetCompanionController`, that check could only be written against
+  /// the catalog's individual factories, which is not the thing that actually
+  /// runs.
+  static PetMessage? forEvent(AppEvent event) {
+    return switch (event) {
+      LessonCompletedEvent(:final lessonId) => lessonCompleted(lessonId),
+      XpGainedEvent(:final amount) => xpGained(amount),
+      UserLeveledUpEvent(:final newLevel) => levelUp(newLevel),
+      AchievementUnlockedEvent(:final achievement) => achievementUnlocked(achievement.title),
+      PetEvolvedEvent(:final newStage) => evolved(newStage),
+      DifficultyDetectedEvent(:final schoolTitle) => difficultyDetected(schoolTitle),
+      SchoolMasteredEvent(:final schoolTitle) => schoolMastered(schoolTitle),
+      FirstInvestmentAddedEvent() => firstInvestment(),
+      HighConcentrationDetectedEvent(:final ticker, :final percent) =>
+        highConcentration(ticker, percent),
+      MissionCompletedEvent(:final missionTitle) => missionCompleted(missionTitle),
+      FinancialLabSimulatorCompletedEvent(:final simulatorTitle) =>
+        labSimulatorCompleted(simulatorTitle),
+      // A session expiring is a plumbing concern (see ApiClient/main.dart's
+      // root listener, which handles the actual logout-and-redirect) — not
+      // a moment the companion should comment on.
+      SessionExpiredEvent() => null,
+    };
+  }
+
   static PetMessage firstInvestment() {
     return const PetMessage(
       id: 'event_first_investment',
@@ -403,7 +438,10 @@ class PetMessageCatalog {
       priority: PetMessagePriority.high,
       trigger: PetMessageTrigger.firstInvestment,
       textKey: AppStrings.companionEventFirstInvestment,
-      mood: PetAnimationState.celebrate,
+      // Neutral, never celebrate/victory: an aporte is real money, and the PRD
+      // reserves the celebratory moods for educational milestones (§10.3,
+      // §12.2). Acknowledged and bridged into learning — not rewarded.
+      mood: PetAnimationState.idle,
       action: PetMessageAction(
         labelKey: AppStrings.companionActionUnderstand,
         destination: PetContext.academy,
