@@ -414,6 +414,8 @@ class Translator {
       AppStrings.labCompoundInterestSubtitle:
           "Veja como aporte, prazo e taxa mudam o resultado.",
       AppStrings.labComingSoon: "Em breve",
+      AppStrings.holdingQuoteUnavailable: "sem cotação",
+      AppStrings.holdingNotQuoted: "não cotado",
       AppStrings.labInflationTitle: "Inflação",
       AppStrings.labFixedIncomeTitle: "Renda Fixa",
       AppStrings.labDiversificationTitle: "Diversificação",
@@ -1111,6 +1113,8 @@ class Translator {
       AppStrings.labCompoundInterestSubtitle:
           "See how contributions, time and rate change the outcome.",
       AppStrings.labComingSoon: "Coming soon",
+      AppStrings.holdingQuoteUnavailable: "no quote",
+      AppStrings.holdingNotQuoted: "not quoted",
       AppStrings.labInflationTitle: "Inflation",
       AppStrings.labFixedIncomeTitle: "Fixed Income",
       AppStrings.labDiversificationTitle: "Diversification",
@@ -1811,6 +1815,8 @@ class Translator {
       AppStrings.labCompoundInterestSubtitle:
           "Mira cómo el aporte, el plazo y la tasa cambian el resultado.",
       AppStrings.labComingSoon: "Próximamente",
+      AppStrings.holdingQuoteUnavailable: "sin cotización",
+      AppStrings.holdingNotQuoted: "no cotizado",
       AppStrings.labInflationTitle: "Inflación",
       AppStrings.labFixedIncomeTitle: "Renta Fija",
       AppStrings.labDiversificationTitle: "Diversificación",
