@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petrimonium/core/navigation/start_route_resolver.dart';
 import 'package:petrimonium/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -274,17 +277,33 @@ void main() {
     },
   );
 
+  /// DEM-102: getPetStatus's TimeoutException (ApiClient's 15s bound) is
+  /// exactly what a device with no signal throws on cold start. Being
+  /// offline must not cost the session — ApiClient's own token-refresh path
+  /// (_performRefresh) already draws the same "network failure isn't proof
+  /// the session is invalid" distinction.
   test(
-    'a failure never routes to a screen that assumes unavailable state',
+    'a network timeout preserves the session and routes home, not login',
     () async {
-      petRepository.statusError = Exception('network down');
+      petRepository.statusError = TimeoutException('boom');
 
       final route = await resolver.resolve();
 
-      expect(route, isNot(StartRoute.home));
-      expect(route, isNot(StartRoute.petSetup));
-      expect(route, isNot(StartRoute.mentorWelcome));
-      expect(route, isNot(StartRoute.quickSetup));
+      expect(route, StartRoute.home);
+      expect(authRepository.logoutCalled, isFalse);
+      expect(authRepository.loggedIn, isTrue);
+    },
+  );
+
+  test(
+    'no connectivity (SocketException) preserves the session and routes home, not login',
+    () async {
+      petRepository.statusError = const SocketException('Failed host lookup');
+
+      final route = await resolver.resolve();
+
+      expect(route, StartRoute.home);
+      expect(authRepository.logoutCalled, isFalse);
     },
   );
 }

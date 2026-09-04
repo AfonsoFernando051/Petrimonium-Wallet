@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/features/auth/data/repositories/auth_repository.dart';
 import 'package:petrimonium/features/onboarding/data/repositories/onboarding_state_repository.dart';
@@ -70,13 +74,33 @@ class StartRouteResolver {
       if (!quickSetupDone) return StartRoute.quickSetup;
 
       return StartRoute.home;
-    } catch (_) {
-      // Any failure while resolving pet/onboarding state is treated as "not
-      // safely resumable" — log the user out rather than risk stranding
-      // them on a screen that assumes state that couldn't be loaded.
+    } catch (error) {
+      // A network-level failure here (no connectivity, backend unreachable,
+      // 15s timeout) is not the same claim as "this session is invalid" —
+      // ApiClient's own token-refresh path draws the same distinction (see
+      // its _performRefresh doc comment). Opening the app with no signal
+      // must not cost the session: fall through to home rather than log
+      // out. This resolver only decides which screen to show first — it
+      // isn't the only place pet/onboarding state gets loaded, so a still-
+      // offline device lands on Home with whatever partial/stale state its
+      // own widgets already handle, instead of a guaranteed empty login
+      // form.
+      //
+      // Anything else reaching here (in practice: a real non-200 from
+      // getPetStatus, e.g. a JWT whose signature still checks out locally
+      // but whose user no longer exists server-side) is a genuine "not
+      // safely resumable" state — log out rather than risk stranding the
+      // user on a screen that assumes state that couldn't be loaded.
+      if (_isNetworkFailure(error)) {
+        return StartRoute.home;
+      }
       await _authRepository.logout();
       return StartRoute.login;
     }
+  }
+
+  bool _isNetworkFailure(Object error) {
+    return error is TimeoutException || error is SocketException || error is http.ClientException;
   }
 
   Future<void> _ensureLocalPetName() async {
