@@ -3,6 +3,8 @@ import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/di/dependency_injection.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
 import 'package:petrimonium/core/utils/translator.dart';
+import 'package:petrimonium/features/mentor/domain/services/wallet_mentor_reply_layers.dart';
+import 'package:petrimonium/features/mentor/presentation/widgets/mentor_reply_layers_view.dart';
 
 /// Home's single Mentor interpretation — a real backend call (the same
 /// `MentorChatRepository` the Mentor tab uses), not hardcoded copy. Fetched
@@ -23,6 +25,7 @@ class MentorInsightCard extends StatefulWidget {
 class _MentorInsightCardState extends State<MentorInsightCard> {
   String? _reply;
   int? _conversationId;
+  DateTime? _receivedAt;
   bool _dismissed = false;
 
   @override
@@ -41,6 +44,7 @@ class _MentorInsightCardState extends State<MentorInsightCard> {
       setState(() {
         _reply = result.reply;
         _conversationId = result.conversationId;
+        _receivedAt = DateTime.now();
       });
     } catch (_) {
       // Silent — see class doc. The Mentor tab remains reachable for a
@@ -53,6 +57,7 @@ class _MentorInsightCardState extends State<MentorInsightCard> {
     if (_dismissed || _reply == null) return const SizedBox.shrink();
 
     final tokens = context.colors;
+    final layers = WalletMentorReplyLayers.tryParse(_reply!);
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -103,10 +108,15 @@ class _MentorInsightCardState extends State<MentorInsightCard> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            _reply!,
-            style: TextStyle(color: tokens.textPrimary, fontSize: 14, height: 1.4),
-          ),
+          // The reply carries [[DATA]]/[[CALCULATION]]/[[INTERPRETATION]]
+          // markers. Rendering it as plain Text put those markers on screen and
+          // flattened a real figure, a derived one and an opinion into one
+          // undifferentiated paragraph — the exact thing the layers exist to
+          // prevent. Falls back to plain markdown when the reply has no layers.
+          if (layers == null)
+            MentorReplyLayersView.markdown(context, _reply!)
+          else
+            MentorReplyLayersView(layers: layers, timestamp: _receivedAt ?? DateTime.now()),
           const SizedBox(height: 8),
           InkWell(
             onTap: () => widget.onOpenMentor(_conversationId),
