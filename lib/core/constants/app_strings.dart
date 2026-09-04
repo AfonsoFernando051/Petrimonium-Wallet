@@ -435,6 +435,11 @@ class AppStrings {
   static const String labCompoundInterestSubtitle =
       "labCompoundInterestSubtitle";
   static const String labComingSoon = "labComingSoon";
+
+  // Price provenance on a holding row — shown instead of a gain/loss badge
+  // when currentPrice is a fallback rather than a real quote (see PriceStatus).
+  static const String holdingQuoteUnavailable = "holdingQuoteUnavailable";
+  static const String holdingNotQuoted = "holdingNotQuoted";
   static const String labInflationTitle = "labInflationTitle";
   static const String labFixedIncomeTitle = "labFixedIncomeTitle";
   static const String labDiversificationTitle = "labDiversificationTitle";

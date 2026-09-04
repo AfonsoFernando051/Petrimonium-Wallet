@@ -4,6 +4,10 @@ import 'package:petrimonium/core/theme/app_color_tokens.dart';
 import 'package:petrimonium/features/asset_details/presentation/screens/asset_details_screen.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/holding.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/investment_type_display.dart';
+import 'package:petrimonium/features/portfolio/domain/entities/price_status.dart';
+import 'package:petrimonium/core/constants/app_strings.dart';
+import 'package:petrimonium/core/utils/translator.dart';
+import 'package:petrimonium/core/widgets/unavailable_badge.dart';
 import 'package:petrimonium/core/utils/formatters.dart';
 import 'package:petrimonium/features/portfolio/presentation/widgets/shared/performance_badge.dart';
 
@@ -73,7 +77,18 @@ class AssetRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              PerformanceBadge(percent: holding.gainPercent, compact: true),
+              // A fallback price makes gainPercent a meaningless 0% — say the quote
+              // is missing instead of reporting "no change" the user would read as fact.
+              if (holding.hasLiveQuote)
+                PerformanceBadge(percent: holding.gainPercent, compact: true)
+              else
+                UnavailableBadge(
+                  label: Translator.translate(
+                    holding.priceStatus == PriceStatus.notQuoted
+                        ? AppStrings.holdingNotQuoted
+                        : AppStrings.holdingQuoteUnavailable,
+                  ),
+                ),
               const SizedBox(width: 2),
               Icon(
                 isPositive ? Icons.chevron_right : Icons.chevron_right,
