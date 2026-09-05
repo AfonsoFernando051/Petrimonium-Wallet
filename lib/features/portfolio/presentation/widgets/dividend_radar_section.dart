@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_colors.dart';
+import 'package:petrimonium/core/constants/app_strings.dart';
 import 'package:petrimonium/core/theme/app_color_tokens.dart';
+import 'package:petrimonium/core/utils/translator.dart';
 import 'package:petrimonium/core/widgets/app_loading_indicator.dart';
 import 'package:petrimonium/core/widgets/glass_card.dart';
 import 'package:petrimonium/features/portfolio/domain/entities/dividend_event.dart';
@@ -82,6 +84,13 @@ class DividendRadarSection extends StatelessWidget {
       children: [
         if (radar.upcoming.isNotEmpty) ...[
           _subLabel('PRÓXIMOS PAGAMENTOS', AppColors.goldenBorder),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              Translator.translate(AppStrings.proventosNotificationsFooter),
+              style: TextStyle(color: tokens.textTertiary, fontSize: 10, height: 1.3),
+            ),
+          ),
           const _Divider(),
           for (final event in radar.upcoming) DividendEventTile(event: event),
         ],

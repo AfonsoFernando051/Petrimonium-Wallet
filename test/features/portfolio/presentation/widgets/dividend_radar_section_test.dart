@@ -77,5 +77,26 @@ void main() {
       expect(find.text('RECEBIDOS'), findsOneWidget);
       expect(find.byType(DividendEventTile), findsNWidgets(3));
     });
+
+    /// DEM-38: an upcoming payment's date is announced, not guaranteed —
+    /// the section must say so without the user having to tap anything,
+    /// same disclaimer the notifications bell already shows.
+    testWidgets('shows the "dates may change" disclaimer under PRÓXIMOS PAGAMENTOS', (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestableWidget(
+        isLoading: false,
+        radar: const DividendRadar(upcoming: [event], history: []),
+      ));
+
+      expect(find.textContaining('podem mudar até a confirmação'), findsOneWidget);
+    });
+
+    testWidgets('does not show the disclaimer when there are no upcoming payments', (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestableWidget(
+        isLoading: false,
+        radar: const DividendRadar(upcoming: [], history: [event]),
+      ));
+
+      expect(find.textContaining('podem mudar até a confirmação'), findsNothing);
+    });
   });
 }
