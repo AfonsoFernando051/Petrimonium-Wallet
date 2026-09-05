@@ -142,7 +142,7 @@ void main() {
 
       await tester.pumpWidget(buildTestableWidget(message));
 
-      expect(find.textContaining('DADO · B3, 15/03 09:41'), findsOneWidget);
+      expect(find.textContaining('DADO · brapi.dev, 15/03 09:41'), findsOneWidget);
       expect(find.text('Suas ações e FIIs desvalorizaram no período.'), findsOneWidget);
       expect(find.text('CÁLCULO DETERMINÍSTICO'), findsOneWidget);
       expect(find.textContaining('812,40'), findsOneWidget);

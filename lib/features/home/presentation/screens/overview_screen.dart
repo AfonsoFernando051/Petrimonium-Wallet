@@ -197,7 +197,7 @@ class _WealthHeroCard extends StatelessWidget {
           const SizedBox(height: 12),
           LayerChip(
             layer: DataLayer.data,
-            label: '${Translator.translate(AppStrings.homeWealthDataChipLabel)} · B3, hoje $time',
+            label: '${Translator.translate(AppStrings.homeWealthDataChipLabel)} · brapi.dev, hoje $time',
           ),
           const SizedBox(height: 12),
           Text(

@@ -74,7 +74,7 @@ class MentorReplyLayersView extends StatelessWidget {
         if (layers.data != null) ...[
           LayerChip(
             layer: DataLayer.data,
-            label: '${Translator.translate(AppStrings.homeWealthDataChipLabel)} · B3, $date $time',
+            label: '${Translator.translate(AppStrings.homeWealthDataChipLabel)} · brapi.dev, $date $time',
           ),
           const SizedBox(height: 8),
           markdown(context, layers.data!),
