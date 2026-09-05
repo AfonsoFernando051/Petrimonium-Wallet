@@ -1,4 +1,4 @@
-package com.jf.petrimonium
+package com.petrimonium.wallet
 
 import io.flutter.embedding.android.FlutterActivity
 
