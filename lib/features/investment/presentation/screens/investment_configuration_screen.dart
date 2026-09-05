@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:petrimonium/core/constants/app_colors.dart';
 import 'package:petrimonium/core/constants/app_strings.dart';
@@ -354,13 +356,24 @@ class _InvestmentConfigurationScreenState extends State<InvestmentConfigurationS
           final symbol = selection['symbol']?.toString() ?? selection['stock']?.toString() ?? '';
           setState(() {
             _nameController.text = symbol;
-            _priceController.text = selection['regularMarketPrice']?.toString() ?? selection['close']?.toString() ?? '';
             // Only fill in a type the user hasn't picked yet — never override
             // an explicit selection, and leave it untouched when the ticker
             // is ambiguous (BDR/ETF-39/unit/free text) so they still choose.
             _selectedType ??= TickerTypeClassifier.classify(symbol);
             _formKey.currentState?.validate();
           });
+          if (_selectedDate != null) {
+            // DEM-54: a purchase date was already chosen (e.g. the user is
+            // fixing a typo'd ticker after setting the date) — re-derive the
+            // price for that date instead of clobbering it with this search
+            // result's live quote, which would silently turn today's price
+            // into an old lot's recorded cost.
+            unawaited(_refreshPriceForSelectedDate());
+          } else {
+            setState(() {
+              _priceController.text = selection['regularMarketPrice']?.toString() ?? selection['close']?.toString() ?? '';
+            });
+          }
         },
         fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
           controller.addListener(() {

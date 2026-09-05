@@ -183,6 +183,49 @@ void main() {
       expect(tester.widget<TextFormField>(textFields.at(2)).controller!.text, '42.5');
     });
 
+    /// DEM-54: onSelected used to always fill the price with the search
+    /// result's live quote, even when a purchase date was already chosen —
+    /// silently turning today's price into an old lot's recorded cost the
+    /// next time a ticker was picked/corrected from autocomplete.
+    testWidgets('selecting a ticker from autocomplete after a date is already set re-fetches the historical price instead of using the live quote', (WidgetTester tester) async {
+      when(() => mockInvestmentRepository.searchQuotes('PETR'))
+          .thenAnswer((_) async => <Map<String, dynamic>>[
+                {'symbol': 'PETR4', 'regularMarketPrice': 99.0},
+              ]);
+      when(() => mockInvestmentRepository.fetchQuoteAtDate('PETR4', any()))
+          .thenAnswer((_) async => <String, dynamic>{'regularMarketPrice': 30.0});
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Pick the purchase date first, before the ticker even exists yet —
+      // fetchQuoteAtDate isn't called (empty ticker), matching _refreshPriceForSelectedDate's guard.
+      await tapVisible(tester, find.text('Data de Compra'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('OK'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Now select the ticker from the autocomplete dropdown — the actual
+      // onSelected callback, not enterText (which never fires it).
+      final textFields = find.byType(TextFormField);
+      await tester.ensureVisible(textFields.at(0));
+      await tester.enterText(textFields.at(0), 'PETR');
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('PETR4'), findsOneWidget, reason: 'the autocomplete option must be showing');
+      await tester.tap(find.text('PETR4'));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      verify(() => mockInvestmentRepository.fetchQuoteAtDate('PETR4', any())).called(1);
+      expect(
+        tester.widget<TextFormField>(textFields.at(2)).controller!.text,
+        '30.0',
+        reason: 'must show the historical price for the already-chosen date, not the live quote (99.0)',
+      );
+    });
+
     testWidgets('editing an added asset pre-fills the form and switches the button to "Salvar Alteração"', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
